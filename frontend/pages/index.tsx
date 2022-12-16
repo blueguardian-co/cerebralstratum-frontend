@@ -5,7 +5,7 @@ import styles from '../styles/Home.module.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export default function Home() {
+function Home({ healthz }) {
   return (
     <>
       <Head>
@@ -42,12 +42,16 @@ export default function Home() {
         <div className={styles.center}>
           <Image
             className={styles.logo}
-            src="/next.svg"
+            src="/tracker.svg"
             alt="Tracker Logo"
-            width={180}
-            height={37}
+            height={150}
+            width={100}
             priority
           />
+        </div>
+
+        <div className={styles.center}>
+          <p>API Status: <strong>{healthz.status}</strong></p>
         </div>
 
         <div className={styles.grid}>
@@ -83,3 +87,14 @@ export default function Home() {
     </>
   )
 }
+
+export async function getServerSideProps() {
+  // Fetch data from external API
+  const res = await fetch(`http://localhost:6443/api/v2/healthz`)
+  const healthz = await res.json()
+
+  // Pass data to the page via props
+  return { props: { healthz } }
+}
+
+export default Home
