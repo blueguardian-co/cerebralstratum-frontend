@@ -70,7 +70,7 @@ function Home({ healthz }) {
           </a>
 
           <a
-            href="https://github.com/blueguardian"
+            href="https://github.com/blueguardian-co"
             className={styles.card}
             target="_blank"
             rel="noopener noreferrer"
