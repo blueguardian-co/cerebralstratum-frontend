@@ -68,21 +68,24 @@ function Home({ healthz }) {
               Find in-depth information about Tracker features and&nbsp;API.
             </p>
           </a>
-
-          <a
-            href="https://github.com/blueguardian-co"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Our Code is Open! <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              View our the source code for Tracker!
-            </p>
-          </a>
         </div>
+        <footer>
+          <div className={styles.center}>
+            <a
+              href="https://github.com/blueguardian-co"
+              className={styles.card}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <h2 className={inter.className}>
+                Our Code is Open! <span>-&gt;</span>
+              </h2>
+              <p className={inter.className}>
+                View our the source code for Tracker!
+              </p>
+            </a>
+          </div>
+        </footer>
       </main>
     </>
   )
@@ -92,7 +95,9 @@ export async function getServerSideProps() {
   // Fetch data from external API
   const res = await fetch(`http://localhost:6443/api/v2/healthz`)
   const healthz = await res.json()
-
+  if (! healthz) {
+    return { props: {"status": "offline"} }
+  }
   // Pass data to the page via props
   return { props: { healthz } }
 }
