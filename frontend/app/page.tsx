@@ -78,9 +78,24 @@ export default async function Home() {
         </div>
         <footer>
           <div className={styles.grid}>
-            <p>
-              About Us
-            </p>
+          <Link
+              href="https://blueguardian.co/contact-us"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <p>
+                Contact us
+              </p>
+            </Link>
+            <Link
+              href="https://blueguardian.co/about"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <p>
+                About Us
+              </p>
+            </Link>
             <p>API Status: <strong>{apiStatus.status}</strong></p>
           </div>
           </footer>
@@ -91,7 +106,7 @@ export default async function Home() {
 
 
 async function getApiStatus() {
-  const res = await fetch('http://localhost:6443/api/v2/healthz');
+  const res = await fetch('http://localhost:6443/api/v1/healthz');
   // The return value is *not* serialized
   // You can return Date, Map, Set, etc.
 
