@@ -15,20 +15,38 @@ export default async function Home() {
             Welcome to BlueGuardian's Tracker&nbsp;
             <code className={styles.code}>login or signup</code>
           </p>
-          <Link
-            href="/cli"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              CLI<span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Use our commandline interface to interact with your devices
-            </p>
-          </Link>
-          <p>API Status: <strong>{apiStatus.status}</strong></p>
+            <div className={styles.grid}>
+            <Link
+              href="/cli"
+              className={styles.card}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <h2 className={inter.className}>
+                CLI<span>-&gt;</span>
+              </h2>
+            </Link>
+            <Link
+              href="https://tracker.blueguardian.co/docs"
+              className={styles.card}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <h2 className={inter.className}>
+                Docs<span>-&gt;</span>
+              </h2>
+            </Link>
+            <Link
+                href="https://github.com/blueguardian-co"
+                className={styles.card}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <h2 className={inter.className}>
+                  Code<span>-&gt;</span>
+                </h2>
+              </Link>
+          </div>
           <div>
             <a
               href="https://blueguardian.co/about"
@@ -59,33 +77,11 @@ export default async function Home() {
           />
         </div>
         <footer>
-        <div className={styles.grid}>
-          <a
-            href="https://tracker.blueguardian.co/docs"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Docs<span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Find in-depth information about Tracker features and&nbsp;API.
+          <div className={styles.grid}>
+            <p>
+              About Us
             </p>
-          </a>
-          <a
-              href="https://github.com/blueguardian-co"
-              className={styles.card}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <h2 className={inter.className}>
-                Our Code is Open! <span>-&gt;</span>
-              </h2>
-              <p className={inter.className}>
-                View our the source code for Tracker!
-              </p>
-            </a>
+            <p>API Status: <strong>{apiStatus.status}</strong></p>
           </div>
           </footer>
       </main>
