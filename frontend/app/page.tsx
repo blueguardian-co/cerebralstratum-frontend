@@ -1,12 +1,28 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Inter } from '@next/font/google'
+
+import wretch from "wretch"
+
 import styles from '../styles/Home.module.css'
+import * as csapi from '../scripts/api'
 
 const inter = Inter({ subsets: ['latin'] })
 
+let csApiHost = process.env.CS_API_HOST;
+
+if (csApiHost === undefined) {
+  const message = 'CS_API_HOST environment variable is not defined. Using `localhost`';
+  console.log(message)
+  csApiHost = 'localhost';
+}
+const api =
+  wretch(`http://${csApiHost}:6443`, { mode: "cors"}) // BaseURL
+  .errorType("json")
+  .resolve(r => r.json());
+
 export default async function Home() {
-  const apiStatus = await getApiStatus();
+  const apiStatus = await csapi.getApiStatus(api);
   return (
     <>
       <main className={styles.main}>
@@ -102,19 +118,4 @@ export default async function Home() {
       </main>
     </>
   )
-}
-
-
-async function getApiStatus() {
-  const res = await fetch('http://localhost:6443/api/v1/healthz');
-  // The return value is *not* serialized
-  // You can return Date, Map, Set, etc.
-
-  // Recommendation: handle errors
-  if (!res.ok) {
-    // This will activate the closest `error.js` Error Boundary
-    throw new Error('Failed to fetch data');
-  }
-
-  return res.json();
 }
