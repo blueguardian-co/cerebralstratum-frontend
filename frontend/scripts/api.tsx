@@ -1,10 +1,10 @@
 // API v1 functions
 import wretch from "wretch"
 
-export async function getApiStatus(api: object) {
+export async function pingApi(api: object) {
   try {
-    const apiHealth =  await api.get("/api/v1/healthz");
-    return apiHealth
+    const apiPing =  await api.get("/api/v1/ping");
+    return apiPing
   }
   catch (error) {
     console.log(error);

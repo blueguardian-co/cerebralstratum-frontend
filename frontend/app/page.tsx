@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Inter } from '@next/font/google'
+import { Inter } from 'next/font/google'
 
 import wretch from "wretch"
 
@@ -17,12 +17,16 @@ if (csApiHost === undefined) {
   csApiHost = 'localhost';
 }
 const api =
-  wretch(`http://${csApiHost}:6443`, { mode: "cors"}) // BaseURL
+  wretch(`http://${csApiHost}:6443`) // BaseURL
   .errorType("json")
   .resolve(r => r.json());
 
 export default async function Home() {
-  const apiStatus = await csapi.getApiStatus(api);
+  const apiStatus = await csapi.pingApi(api);
+  let apiUp:string = "unreachable";
+  if (apiStatus.ping == "pong") {
+    apiUp = "reachable";
+  }
   return (
     <>
       <main className={styles.main}>
@@ -112,7 +116,7 @@ export default async function Home() {
                 About Us
               </p>
             </Link>
-            <p>API Status: <strong>{apiStatus.status}</strong></p>
+            <p>API: <strong>{apiUp}</strong></p>
           </div>
           </footer>
       </main>
