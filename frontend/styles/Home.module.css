@@ -3,15 +3,26 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 6rem;
+  padding: 1rem;
   min-height: 95vh;
 }
 
 .terminal {
   position:relative;
-  width:64%;
-  height:100%;
+  width: var(--max-width);
+  max-width: 100%;
+  height:var(--max-height);
+  max-height: 100%;
   min-height: 50vh;
+}
+
+.map {
+  position:relative;
+  width: var(--max-width);
+  max-width: 100%;
+  height:var(--max-height);
+  max-height: 100%;
+  min-height: 70vh;
 }
 
 .description {

@@ -1,5 +1,4 @@
 // API v1 functions
-import wretch from "wretch"
 
 export async function pingApi(api: object) {
   try {
@@ -8,7 +7,7 @@ export async function pingApi(api: object) {
   }
   catch (error) {
     console.log(error);
-    var errorDict = {"status": "offline"};
+    var errorDict = {"response": "unreachable"};
     return errorDict
   }
 }
