@@ -1,15 +1,19 @@
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Inter } from 'next/font/google'
 
+import * as csapi from '../scripts/api'
+
 import wretch from "wretch"
-import dynamic from 'next/dynamic'
 
 import styles from '../styles/Home.module.css'
-import * as csapi from '../scripts/api'
 
 const inter = Inter({ subsets: ['latin'] })
 
+/*
+API health check stuff
+*/
 let csApiHost = process.env.CS_API_HOST;
 if (csApiHost === undefined) {
   const message = 'CS_API_HOST environment variable is not defined. Using `localhost`';
@@ -20,7 +24,10 @@ const api = wretch(`http://${csApiHost}:6443`)
 .errorType("json")
 .resolve(r => r.json());
 
-const Map = dynamic(() => import("../scripts/map"), {
+/*
+Map stuff
+*/
+const Map = dynamic(() => import("../components/Map"), {
   loading: () => "Loading...",
   ssr: false
 });
@@ -48,7 +55,7 @@ export default async function Home() {
                 </h2>
               </Link>
               <Link
-                href="https://tracker.blueguardian.co/docs"
+                href={"http://" + csApiHost + ":6443  /swagger-ui"}
                 className={styles.card}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -87,7 +94,7 @@ export default async function Home() {
         </header>
 
         <div className={styles.map}>
-        <Map />
+          <Map />
         </div>
 
         <footer>
