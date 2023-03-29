@@ -1,22 +1,33 @@
 import * as React from 'react';
 import { PageSection, Title } from '@patternfly/react-core';
-const asciidoctor = require('@asciidoctor/core')();
+import * as Dompurify from 'dompurify'
+
+const sanitizer = Dompurify.sanitize;
+import Processor, { Asciidoctor } from 'asciidoctor';
 
 const asciidoctor_options = {
   to_file: false,
   standalone: true,
-  base_dir: "@app/Documentation/adoc",
   backend: "html5"
 };
 
-let content = "= Test Document"
-let html = asciidoctor.convert(content, asciidoctor_options);
+processor : Asciidoctor;
+const processor = Processor();
+
+let content = `
+= Test Document
+
+== This is a test
+`;
+
+let html = processor.convertFile(content , asciidoctor_options);
+console.log(html);
 
 let Documentation: React.FunctionComponent = () => (
-    <PageSection>
-      <Title headingLevel="h1" size="lg">Documentation</Title>
-      {html}
-    </PageSection>
+  <PageSection>
+    <Title headingLevel="h1" size="lg">Documentation</Title>
+    <div dangerouslySetInnerHTML={{__html: sanitizer(html)}} />
+  </PageSection>
 )
 
 export { Documentation };
