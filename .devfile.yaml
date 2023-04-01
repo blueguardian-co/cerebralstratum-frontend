@@ -50,3 +50,19 @@ commands:
       label: Run the web app (and download dependencies)
       workingDir: '${PROJECTS_ROOT}/cerebralstratum-frontend'
     id: 3-install-and-run
+  - exec:
+      commandLine: nodemon --inspect app.js
+      component: tools
+      group:
+        isDefault: true
+        kind: debug
+      label: Run the web app (debugging enabled)
+      workingDir: '${PROJECTS_ROOT}/cerebralstratum-frontend'
+    id: 4-debug
+  - exec:
+      commandLine: 'node_server_pids=$(pgrep -fx ''.*nodemon (--inspect )?app.js'' | tr "\\n" " ") && echo "Stopping node server with PIDs: ${node_server_pids}" &&  kill -15 ${node_server_pids} &>/dev/null && echo ''Done.'''
+      component: tools
+      group:
+        kind: run
+      label: Stop the web app
+    id: 5-stopapp
