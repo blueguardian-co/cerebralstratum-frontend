@@ -24,13 +24,7 @@ components:
       memoryLimit: 1G
       mountSources: true
       sourceMapping: /projects
-      volumeMounts:
-        - name: npm
-          path: /home/user/.npm
     name: tools
-  - name: npm
-    volume:
-      size: 1G
 commands:
   - exec:
       commandLine: npm install
@@ -38,37 +32,21 @@ commands:
       group:
         kind: build
       label: Download dependencies
-      workingDir: '${PROJECTS_ROOT}/web-nodejs-sample/app'
+      workingDir: '${PROJECTS_ROOT}/cerebralstratum-frontend'
     id: 1-dependencies
   - exec:
-      commandLine: nodemon app.js
+      commandLine: npm run start:dev
       component: tools
       group:
         kind: run
       label: Run the web app
-      workingDir: '${PROJECTS_ROOT}/web-nodejs-sample/app'
+      workingDir: '${PROJECTS_ROOT}/cerebralstratum-frontend'
     id: 2-run
   - exec:
-      commandLine: npm install; nodemon app.js
+      commandLine: npm install; npm run start:dev
       component: tools
       group:
         kind: run
       label: Run the web app (and download dependencies)
-      workingDir: '${PROJECTS_ROOT}/web-nodejs-sample/app'
+      workingDir: '${PROJECTS_ROOT}/cerebralstratum-frontend'
     id: 3-install-and-run
-  - exec:
-      commandLine: nodemon --inspect app.js
-      component: tools
-      group:
-        isDefault: true
-        kind: debug
-      label: Run the web app (debugging enabled)
-      workingDir: '${PROJECTS_ROOT}/web-nodejs-sample/app'
-    id: 4-debug
-  - exec:
-      commandLine: 'node_server_pids=$(pgrep -fx ''.*nodemon (--inspect )?app.js'' | tr "\\n" " ") && echo "Stopping node server with PIDs: ${node_server_pids}" &&  kill -15 ${node_server_pids} &>/dev/null && echo ''Done.'''
-      component: tools
-      group:
-        kind: run
-      label: Stop the web app
-    id: 5-stopapp

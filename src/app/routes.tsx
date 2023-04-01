@@ -6,7 +6,7 @@ import { GeneralSettings } from '@app/Settings/General/GeneralSettings';
 import { ProfileSettings } from '@app/Settings/Profile/ProfileSettings';
 import { NotFound } from '@app/NotFound/NotFound';
 import { useDocumentTitle } from '@app/utils/useDocumentTitle';
-import { Documentation } from '@app/Documentation/Documentation';
+//import { Documentation } from '@app/Documentation/Documentation';
 
 let routeFocusTimer: number;
 export interface IAppRoute {
@@ -35,13 +35,13 @@ const routes: AppRouteConfig[] = [
     path: '/',
     title: 'PatternFly Seed | Main Dashboard',
   },
-  {
-    component: Documentation,
-    exact: true,
-    label: 'Documentation',
-    path: '/docs',
-    title: 'PatternFly Seed | Documentation Page',
-  },
+  // {
+  //   component: Documentation,
+  //   exact: true,
+  //   label: 'Documentation',
+  //   path: '/docs',
+  //   title: 'PatternFly Seed | Documentation Page',
+  // },
   {
     component: Support,
     exact: true,
