@@ -1,10 +1,10 @@
 {
-  "name": "patternfly-seed",
-  "version": "0.0.2",
-  "description": "An open source build scaffolding utility for web apps.",
-  "repository": "https://github.com/patternfly/patternfly-react-seed.git",
-  "homepage": "https://patternfly-react-seed.surge.sh",
-  "license": "MIT",
+  "name": "cerebralstratum",
+  "version": "0.0.1",
+  "description": "An open source device tracker",
+  "repository": "https://github.com/blueguardian-co/cerebralstratum-frontend.git",
+  "homepage": "https://tracker.blueguardian.co",
+  "license": "GPT3",
   "private": true,
   "scripts": {
     "prebuild": "npm run type-check && npm run clean",
@@ -83,9 +83,6 @@
     "@patternfly/react-icons": "^4.32.1",
     "@patternfly/react-styles": "^4.31.1",
     "@storybook/builder-webpack5": "^6.2.9",
-    "asciidoctor": "^2.2.6",
-    "dompurify": "^3.0.1",
-    "path": "^0.12.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "sirv-cli": "^1.0.12"

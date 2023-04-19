@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { NavLink, useLocation, useHistory } from 'react-router-dom';
 import {
+  Banner,
+  Flex,
+  FlexItem,
   Nav,
   NavList,
   NavItem,
@@ -12,6 +15,12 @@ import {
 } from '@patternfly/react-core';
 import { routes, IAppRoute, IAppRouteGroup } from '@app/routes';
 import logo from '@app/bgimages/Patternfly-Logo.svg';
+import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
+import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
+import ExclamationTriangleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-triangle-icon';
+import InfoCircleIcon from '@patternfly/react-icons/dist/esm/icons/info-circle-icon';
+import BellIcon from '@patternfly/react-icons/dist/esm/icons/bell-icon';
+
 
 interface IAppLayout {
   children: React.ReactNode;
@@ -88,6 +97,57 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
       isNavOpen={isMobileView ? isNavOpenMobile : isNavOpen} />
   );
 
+
+ const BannerStatus: React.FunctionComponent = () => (
+  <>
+    <Banner screenReaderText="Default banner">
+      <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+        <FlexItem>
+          <BellIcon />
+        </FlexItem>
+        <FlexItem>Default banner</FlexItem>
+      </Flex>
+    </Banner>
+    <br />
+    <Banner screenReaderText="Info banner" variant="info">
+      <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+        <FlexItem>
+          <InfoCircleIcon />
+        </FlexItem>
+        <FlexItem>Info banner</FlexItem>
+      </Flex>
+    </Banner>
+    <br />
+    <Banner screenReaderText="Danger banner" variant="danger">
+      <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+        <FlexItem>
+          <ExclamationCircleIcon />
+        </FlexItem>
+        <FlexItem>Danger banner</FlexItem>
+      </Flex>
+    </Banner>
+    <br />
+    <Banner screenReaderText="Success banner" variant="success">
+      <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+        <FlexItem>
+          <CheckCircleIcon />
+        </FlexItem>
+        <FlexItem>Success banner</FlexItem>
+      </Flex>
+    </Banner>
+    <br />
+    <Banner screenReaderText="Warning banner" variant="warning">
+      <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+        <FlexItem>
+          <ExclamationTriangleIcon />
+        </FlexItem>
+        <FlexItem>Warning banner</FlexItem>
+      </Flex>
+    </Banner>
+  </>
+);
+
+
   const pageId = 'primary-app-container';
 
   const PageSkipToContent = (
@@ -104,6 +164,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
       mainContainerId={pageId}
       header={Header}
       sidebar={Sidebar}
+      banner={Banner}
       onPageResize={onPageResize}
       skipToContent={PageSkipToContent}>
       {children}
