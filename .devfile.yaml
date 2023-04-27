@@ -5,12 +5,8 @@ metadata:
 components:
   - attributes:
       controller.devfile.io/merge-contribution: true
+  - name: tools
     container:
-      endpoints:
-        - exposure: public
-          name: nodejs
-          protocol: http
-          targetPort: 3000
       env:
         - name: CHE_DASHBOARD_URL
           value: 'https://devspaces.apps.sandbox-m3.1530.p1.openshiftapps.com'
@@ -24,11 +20,23 @@ components:
       memoryLimit: 1G
       mountSources: true
       sourceMapping: /projects
-    name: tools
+  - name: nodejs
+    container:
+      image: 'registry.redhat.io/rhel9/nodejs-18:latest'
+      mountSources: true
+      sourceMapping: /projects
+      endpoints:
+        - exposure: public
+          name: nodejs
+          protocol: http
+          targetPort: 3000
+      command:
+        - sleep
+        - infinity
 commands:
   - exec:
       commandLine: npm install
-      component: tools
+      component: nodejs
       group:
         kind: build
       label: Download dependencies
@@ -36,7 +44,7 @@ commands:
     id: 1-dependencies
   - exec:
       commandLine: npm run start:dev
-      component: tools
+      component: nodejs
       group:
         kind: run
       label: Run the web app
@@ -44,7 +52,7 @@ commands:
     id: 2-run
   - exec:
       commandLine: npm install; npm run start:dev
-      component: tools
+      component: nodejs
       group:
         kind: run
       label: Run the web app (and download dependencies)
