@@ -164,7 +164,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
       mainContainerId={pageId}
       header={Header}
       sidebar={Sidebar}
-      banner={Banner}
+      banner={BannerStatus}
       onPageResize={onPageResize}
       skipToContent={PageSkipToContent}>
       {children}
