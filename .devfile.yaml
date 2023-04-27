@@ -3,8 +3,6 @@ schemaVersion: 2.1.0
 metadata:
   name: cerebral-stratum-frontend
 components:
-  - attributes:
-      controller.devfile.io/merge-contribution: true
   - name: tools
     container:
       env:
@@ -25,6 +23,7 @@ components:
       image: 'registry.redhat.io/rhel9/nodejs-18:latest'
       mountSources: true
       sourceMapping: /projects
+      memoryLimit: 2G
       endpoints:
         - exposure: public
           name: nodejs
