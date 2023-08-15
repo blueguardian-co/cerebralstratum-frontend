@@ -4,7 +4,7 @@ import { BannerStatus } from '../Banner/Banner';
 
 const Dashboard: React.FunctionComponent = () => (
   <PageSection>
-    <Title headingLevel="h1" size="lg">Devices</Title>
+    <Title headingLevel="h1" size="lg">Devices Overview</Title>
     <BannerStatus />
   </PageSection>
 )
