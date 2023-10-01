@@ -14,13 +14,13 @@ components:
           value: 'http://plugin-registry.crw.svc:8080/v3'
         - name: OPENVSX_REGISTRY_URL
           value: 'https://open-vsx.org'
-      image: 'registry.redhat.io/devspaces/udi-rhel8@sha256:99ff1b5c541855e4cf368816c4bcdcdc86d32304023f72c4443213a4032ef05b'
+      image: 'registry.redhat.io/devspaces/udi-rhel8:latest'
       memoryLimit: 1G
       mountSources: true
       sourceMapping: /projects
   - name: nodejs
     container:
-      image: 'registry.redhat.io/rhel9/nodejs-18:latest'
+      image: 'registry.redhat.io/ubi9/nodejs-18:latest'
       mountSources: true
       sourceMapping: /projects
       memoryLimit: 2G
