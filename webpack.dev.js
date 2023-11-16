@@ -21,7 +21,7 @@ module.exports = merge(common('development'), {
     },
     client: {
       overlay: true,
-      webSocketURL: "ws://alex-blueguardianco-cerebral-stratum-frontend-nodejs.apps.k8s.prod.lab.local:80/ws",
+      webSocketURL: "ws://0.0.0.0:80/ws",
     },
   },
   module: {
