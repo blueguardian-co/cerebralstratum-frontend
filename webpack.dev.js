@@ -11,9 +11,6 @@ module.exports = merge(common('development'), {
   mode: 'development',
   devtool: 'eval-source-map',
   devServer: {
-    client: {
-      webSocketURL: "ws://alex-cerebral-stratum-frontend-nodejs.apps.sandbox-m4.g2pi.p1.openshiftapps.com:80/ws"
-    },
     host: HOST,
     port: PORT,
     historyApiFallback: true,
@@ -24,6 +21,7 @@ module.exports = merge(common('development'), {
     },
     client: {
       overlay: true,
+      webSocketURL: "ws://alex-blueguardianco-cerebral-stratum-frontend-nodejs.apps.k8s.prod.lab.local:80/ws",
     },
   },
   module: {
