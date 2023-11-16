@@ -4,7 +4,7 @@ import {
   Flex,
   FlexItem,
 } from '@patternfly/react-core';
-import { PageSection, Title } from '@patternfly/react-core';
+import { PageSection } from '@patternfly/react-core';
 import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import ExclamationTriangleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-triangle-icon';
@@ -22,7 +22,7 @@ const BannerStatus: React.FunctionComponent = () => (
         </Flex>
       </Banner>
       <br />
-      <Banner screenReaderText="Info banner" variant="info">
+      <Banner screenReaderText="Info banner" variant="blue">
         <Flex spaceItems={{ default: 'spaceItemsSm' }}>
           <FlexItem>
             <InfoCircleIcon />
@@ -31,7 +31,7 @@ const BannerStatus: React.FunctionComponent = () => (
         </Flex>
       </Banner>
       <br />
-      <Banner screenReaderText="Danger banner" variant="danger">
+      <Banner screenReaderText="Danger banner" variant="red">
         <Flex spaceItems={{ default: 'spaceItemsSm' }}>
           <FlexItem>
             <ExclamationCircleIcon />
@@ -40,7 +40,7 @@ const BannerStatus: React.FunctionComponent = () => (
         </Flex>
       </Banner>
       <br />
-      <Banner screenReaderText="Success banner" variant="success">
+      <Banner screenReaderText="Success banner" variant="green">
         <Flex spaceItems={{ default: 'spaceItemsSm' }}>
           <FlexItem>
             <CheckCircleIcon />
@@ -49,7 +49,7 @@ const BannerStatus: React.FunctionComponent = () => (
         </Flex>
       </Banner>
       <br />
-      <Banner screenReaderText="Warning banner" variant="warning">
+      <Banner screenReaderText="Warning banner" variant="gold">
         <Flex spaceItems={{ default: 'spaceItemsSm' }}>
           <FlexItem>
             <ExclamationTriangleIcon />
