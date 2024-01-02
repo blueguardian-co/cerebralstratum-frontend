@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom';
+import { Chat } from '@app/Chat/Chat';
+import { Devices } from '@app/Devices/Devices';
 import { Dashboard } from '@app/Dashboard/Dashboard';
 import { Support } from '@app/Support/Support';
 import { GeneralSettings } from '@app/Settings/General/GeneralSettings';
@@ -32,14 +34,28 @@ const routes: AppRouteConfig[] = [
     exact: true,
     label: 'Dashboard',
     path: '/',
-    title: 'PatternFly Seed | Main Dashboard',
+    title: 'Tracker | Main Dashboard',
+  },
+  {
+    component: Devices,
+    exact: true,
+    label: 'Devices',
+    path: '/devices',
+    title: 'Tracker | Devices Page',
+  },
+  {
+    component: Chat,
+    exact: true,
+    label: 'Chat',
+    path: '/chat',
+    title: 'Tracker | Chat Page',
   },
   {
     component: Support,
     exact: true,
     label: 'Support',
     path: '/support',
-    title: 'PatternFly Seed | Support Page',
+    title: 'Tracker | Support Page',
   },
   {
     label: 'Settings',
@@ -49,14 +65,14 @@ const routes: AppRouteConfig[] = [
         exact: true,
         label: 'General',
         path: '/settings/general',
-        title: 'PatternFly Seed | General Settings',
+        title: 'Tracker | General Settings',
       },
       {
         component: ProfileSettings,
         exact: true,
         label: 'Profile',
         path: '/settings/profile',
-        title: 'PatternFly Seed | Profile Settings',
+        title: 'Tracker | Profile Settings',
       },
     ],
   },
