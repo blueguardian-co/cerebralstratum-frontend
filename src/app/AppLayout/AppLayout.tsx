@@ -49,7 +49,6 @@ import {
   SearchInput,
   Tooltip
 } from '@patternfly/react-core';
-import { Link } from '@reach/router';
 import { NavLink, useLocation } from 'react-router-dom';
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
 import EllipsisVIcon from '@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon';
@@ -58,7 +57,7 @@ import CogIcon from '@patternfly/react-icons/dist/esm/icons/cog-icon';
 import HelpIcon from '@patternfly/react-icons/dist/esm/icons/help-icon';
 import ThIcon from '@patternfly/react-icons/dist/esm/icons/th-icon';
 import QuestionCircleIcon from '@patternfly/react-icons/dist/esm/icons/question-circle-icon';
-import imgAvatar from '@patternfly/react-core/src/components/Avatar/examples/avatarImg.svg';
+import imgAvatar from '@patternfly/react-core/src/components/assets/avatarImg.svg';
 import pfIcon from '@app/bgimages/Patternfly-Logo.svg';
 import pfLogo from '@app/bgimages/Patternfly-Logo.svg';
 import { IAppRoute, IAppRouteGroup, routes } from '@app/routes';
@@ -193,9 +192,9 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
           itemId="2"
           id="2"
           isFavorited={favorites.includes('2')}
-          component={(props) => <Link {...props} to="#router-link" />}
+          isExternalLink
+          to="#router-link"
         >
-          @reach/router Link
         </MenuItem>
         <MenuItem
           itemId="3"
@@ -203,9 +202,8 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
           isFavorited={favorites.includes('3')}
           isExternalLink
           icon={<img src={pfIcon} />}
-          component={(props) => <Link {...props} to="#router-link2" />}
+          to="#router-link2"
         >
-          @reach/router Link with icon
         </MenuItem>
       </MenuList>
     </MenuGroup>,
@@ -503,7 +501,6 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
         </NavLink>
       </NavItem>
     );
-
     const renderNavGroup = (group: IAppRouteGroup, groupIndex: number) => (
       <NavExpandable
         key={`${group.label}-${groupIndex}`}
