@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../cerebral-stratum-frontend.iml" filepath="$PROJECT_DIR$/../cerebral-stratum-frontend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../cerebralstratum-frontend.iml" filepath="$PROJECT_DIR$/../cerebralstratum-frontend.iml" />
     </modules>
   </component>
 </project>
