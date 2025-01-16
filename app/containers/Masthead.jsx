@@ -11,6 +11,8 @@ import {
     PageSidebar,
     PageSidebarBody,
     PageToggleButton,
+    MenuToggle,
+    MenuToggleElement,
     Masthead,
     MastheadMain,
     MastheadToggle,
@@ -20,6 +22,9 @@ import {
     Nav,
     NavList,
     NavItem,
+    Dropdown,
+    DropdownItem,
+    DropdownList,
     ContentVariants,
     Content,
     Button,
@@ -33,6 +38,11 @@ import { useAuth } from "../components/AuthProvider";
 */
 export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
     const { isAuthenticated, token, user, login, logout, keycloak } = useAuth();
+    const [isOpen, setIsOpen] = React.useState(false);
+
+    const onToggleClick = () => {
+        setIsOpen(!isOpen);
+    };
 
     if (!isAuthenticated) {
         return(
@@ -99,15 +109,31 @@ export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
                             </ToolbarGroup>
                             <ToolbarGroup align={{default: 'alignEnd'}}>
                                 <ToolbarItem>
-                                    <Content>
-                                        {user?.given_name} {user?.family_name}
-                                    </Content>
-                                    <Avatar
-                                        src="https://www.patternfly.org/images/668560cd.svg"
-                                        alt="User's avatar"/>
-                                </ToolbarItem>
-                                <ToolbarItem>
-                                    <Button onClick={logout} variant="primary" ouiaId="LogoutButton">Logout</Button>
+                                    <Dropdown
+                                        isOpen={isOpen}
+                                        onOpenChange={(isOpen) => setIsOpen(isOpen)}
+                                        ouiaId="AccountDropdown"
+                                        toggle={(toggleRef) => (
+                                            <MenuToggle
+                                                ref={toggleRef}
+                                                onClick={onToggleClick}
+                                                isExpanded={isOpen}
+                                                icon={<Avatar
+                                                    src="https://www.patternfly.org/images/668560cd.svg"
+                                                    alt={`${user?.preferred_username}'s avatar`}/>
+                                                }
+                                            >
+                                                <Content>
+                                                    {user?.given_name} {user?.family_name}
+                                                </Content>
+                                            </MenuToggle>
+                                        )}
+                                        shouldFocusToggleOnSelect
+                                    >
+                                        <DropdownItem>
+                                            <Button onClick={logout} variant="primary" ouiaId="LogoutButton">Logout</Button>
+                                        </DropdownItem>
+                                    </Dropdown>
                                 </ToolbarItem>
                             </ToolbarGroup>
                         </ToolbarContent>
