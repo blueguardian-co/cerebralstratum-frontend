@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useContext } from 'react';
+import { useAuth } from "../components/AuthProvider";
+import React, { useState, useContext, useEffect } from 'react';
 import {
     Toolbar,
     ToolbarItem,
@@ -22,6 +23,9 @@ import {
     Nav,
     NavList,
     NavItem,
+    Level,
+    LevelItem,
+    Icon,
     Dropdown,
     DropdownItem,
     DropdownList,
@@ -31,17 +35,21 @@ import {
     Avatar
 } from '@patternfly/react-core';
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
-import { useAuth } from "../components/AuthProvider";
+import { MicrochipIcon } from '@patternfly/react-icons/dist/esm/icons/microchip-icon';
 
 /* TODO:
 - Neaten up CSS for Masthead to have it more consistent
 */
 export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
-    const { isAuthenticated, token, user, login, logout, keycloak } = useAuth();
-    const [isOpen, setIsOpen] = React.useState(false);
+    const { isAuthenticated, user, login, logout } = useAuth();
+    const [isAccountOpen, setIsAccountOpen] = React.useState(false);
+    const [isDeviceOpen, setIsDeviceOpen] = React.useState(false);
 
-    const onToggleClick = () => {
-        setIsOpen(!isOpen);
+    const onAccountToggleClick = () => {
+        setIsAccountOpen(!isAccountOpen);
+    };
+    const onDeviceToggleClick = () => {
+        setIsDeviceOpen(!isDeviceOpen);
     };
 
     if (!isAuthenticated) {
@@ -62,7 +70,7 @@ export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
                     </MastheadBrand>
                 </MastheadMain>
                 <MastheadContent>
-                    <Toolbar id="masthead-toolbar">
+                    <Toolbar id="masthead-toolbar" isFullHeight={true}>
                         <ToolbarContent>
                             <ToolbarGroup align={{ default: 'alignEnd' }}>
                                 <ToolbarItem>
@@ -76,6 +84,31 @@ export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
         );
     }
     if (isAuthenticated) {
+        const [avatarUrl, setAvatarUrl] = useState( "https://www.gravatar.com/avatar/?s=50&d=identicon");
+
+        const getGravatarUrl = async (email) => {
+            if (!email) return "https://www.gravatar.com/avatar/?s=50%d=identicon";
+
+            const encoder = new TextEncoder();
+            const emailBytes = encoder.encode(email.trim().toLowerCase());
+            const hashBuffer = await crypto.subtle.digest('SHA-256', emailBytes);
+
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+            return `https://www.gravatar.com/avatar/${hashHex}?s=50&d=identicon`;
+        };
+
+        useEffect(() => {
+            if (user?.email) {
+                const generateAvatarUrl = async () => {
+                    const url = await getGravatarUrl(user.email);
+                    setAvatarUrl(url);
+                };
+                generateAvatarUrl();
+            }
+        }, [isAuthenticated, user?.email]);
+
         return (
             <Masthead id="page-masthead">
                 <MastheadMain>
@@ -93,34 +126,55 @@ export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
                     </MastheadBrand>
                 </MastheadMain>
                 <MastheadContent>
-                    <Toolbar id="masthead-toolbar">
+                    <Toolbar id="masthead-toolbar" isFullHeight={true}>
                         <ToolbarContent>
                             <ToolbarGroup align={{default: 'alignStart'}}>
                                 <ToolbarContent>
                                     <ToolbarItem>
-                                        <SearchInput placeholder="Filter by device name"/>
+                                        <Dropdown
+                                            isOpen={isDeviceOpen}
+                                            onOpenChange={(isDeviceOpen) => setIsDeviceOpen(isDeviceOpen)}
+                                            ouiaId="AccountDropdown"
+                                            toggle={(toggleDeviceRef) => (
+                                                <MenuToggle
+                                                    ref={toggleDeviceRef}
+                                                    onClick={onDeviceToggleClick}
+                                                    isExpanded={isDeviceOpen}
+                                                    icon={<Icon><MicrochipIcon /></Icon>}
+                                                >
+                                                    <Content>
+                                                        Manage Devices
+                                                    </Content>
+                                                </MenuToggle>
+                                            )}
+                                            shouldFocusToggleOnSelect
+                                        >
+                                            <DropdownItem  ouiaId="DeviceRegistrationButton">
+                                                Register Device
+                                            </DropdownItem>
+                                        </Dropdown>
                                     </ToolbarItem>
                                     <ToolbarItem>
-                                        <Button variant="primary" ouiaId="DeviceRegistrationButton">
-                                            Register Device
-                                        </Button>
+                                        <SearchInput placeholder="Filter displayed devices"/>
                                     </ToolbarItem>
                                 </ToolbarContent>
                             </ToolbarGroup>
                             <ToolbarGroup align={{default: 'alignEnd'}}>
                                 <ToolbarItem>
                                     <Dropdown
-                                        isOpen={isOpen}
-                                        onOpenChange={(isOpen) => setIsOpen(isOpen)}
+                                        isOpen={isAccountOpen}
+                                        onOpenChange={(isAccountOpen) => setIsAccountOpen(isAccountOpen)}
                                         ouiaId="AccountDropdown"
-                                        toggle={(toggleRef) => (
+                                        toggle={(toggleAccountRef) => (
                                             <MenuToggle
-                                                ref={toggleRef}
-                                                onClick={onToggleClick}
-                                                isExpanded={isOpen}
+                                                ref={toggleAccountRef}
+                                                onClick={onAccountToggleClick}
+                                                isExpanded={isAccountOpen}
                                                 icon={<Avatar
-                                                    src="https://www.patternfly.org/images/668560cd.svg"
-                                                    alt={`${user?.preferred_username}'s avatar`}/>
+                                                    src={avatarUrl}
+                                                    alt={`${user?.preferred_username}'s avatar`}
+                                                    size="sm"
+                                                />
                                                 }
                                             >
                                                 <Content>
@@ -131,7 +185,19 @@ export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
                                         shouldFocusToggleOnSelect
                                     >
                                         <DropdownItem>
-                                            <Button onClick={logout} variant="primary" ouiaId="LogoutButton">Logout</Button>
+                                            <Content
+                                                component={ContentVariants.a}
+                                                href={`${process.env.NEXT_PUBLIC_KEYCLOAK_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/account/#/`}
+                                                target="_blank"
+                                                noreferrer="true"
+                                                noopen="true"
+                                                alt={"Access and manage your account. This is an external link."}
+                                            >
+                                                Account
+                                            </Content>
+                                        </DropdownItem>
+                                        <DropdownItem onClick={logout} ouiaId="LogoutButton">
+                                            Logout
                                         </DropdownItem>
                                     </Dropdown>
                                 </ToolbarItem>

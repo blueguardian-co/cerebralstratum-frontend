@@ -14,13 +14,13 @@ const keycloak = new Keycloak(keycloakConfig);
 
 // -------- Context Setup -------- //
 type AuthContextValue = {
-    isAuthenticated: boolean; // Whether the user is authenticated or not
-    token: string | undefined; // The current token
-    user: KeycloakTokenPayload | null; // Current user's details
-    keycloak: KeycloakInstance; // The Keycloak instance for further use
-    login: () => void; // Login method to manually trigger login
-    logout: () => void; // Logout method
-    checkRefreshToken: () => Promise<void>; // Token refresh method
+    isAuthenticated: boolean;
+    token: string | undefined;
+    user: KeycloakTokenPayload | null;
+    keycloak: KeycloakInstance;
+    login: () => void;
+    logout: () => void;
+    refreshToken: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -77,7 +77,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     // Periodically refresh the token
-    const checkRefreshToken = async () => {
+    const refreshToken = async () => {
         try {
             if (!keycloak.refreshToken) {
                 logout()
@@ -125,7 +125,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Set up periodic token refresh (every 30 seconds)
         const refreshInterval = setInterval(() => {
             if (keycloak.authenticated) {
-                checkRefreshToken();
+                refreshToken();
             }
         }, 30000);
 
@@ -137,7 +137,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, token, user, keycloak, login, logout, checkRefreshToken }}>
+        <AuthContext.Provider value={{ isAuthenticated, token, user, keycloak, login, logout, refreshToken }}>
             {children}
         </AuthContext.Provider>
     );
