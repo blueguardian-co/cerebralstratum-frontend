@@ -1,41 +1,39 @@
 # Stage 1: Build Stage
 FROM registry.redhat.io/rhel9/nodejs-22-minimal:latest AS builder
 
-# Set working directory
-WORKDIR /app
+USER 1001
 
-# Install dependencies
-COPY package.json package-lock.json ./
+WORKDIR /opt/app-root/src
+
+COPY --chown=1001:0 package.json package-lock.json ./
+
 RUN npm install --frozen-lockfile
 
-# Copy application files
 COPY . .
 
-# Build the application
 RUN npm run build
 
-# Remove dev dependencies to reduce image size
 RUN npm prune --omit=dev
 
 # Stage 2: Production Stage
 FROM registry.redhat.io/rhel9/nodejs-22-minimal:latest AS runner
 
-# Set working directory
-WORKDIR /app
+USER 1001
 
-# Copy built application from builder
-COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/package.json /app/package-lock.json ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
+WORKDIR /opt/app-root/src
 
-# Specify ENV variables for production
+COPY --from=builder /opt/app-root/src/next.config.js ./
+COPY --from=builder /opt/app-root/src/package.json /opt/app-root/src/package-lock.json ./
+COPY --from=builder /opt/app-root/src/public ./public
+COPY --from=builder /opt/app-root/src/.next ./.next
+COPY --from=builder /opt/app-root/src/node_modules ./node_modules
+
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Expose the application's port
 EXPOSE 3000
 
-# Start the application
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+       CMD curl -f http://localhost:3000/ || exit 1
+
 CMD ["npm", "start"]
