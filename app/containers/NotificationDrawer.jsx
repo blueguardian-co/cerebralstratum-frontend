@@ -29,6 +29,16 @@ export default function AppNotificationDrawer(
         setBackendNotificationGroupExpanded(value);
     };
 
+    const toggleReadState = (id) => {
+        setBackendNotifications((prevNotifications) =>
+            prevNotifications.map((notification) =>
+                notification.id === id
+                    ? { ...notification, read: !notification.read }
+                    : notification
+            )
+        );
+    };
+
     return (
         <NotificationDrawer>
             <NotificationDrawerHeader onClose={onCloseNotificationDrawer} />
@@ -38,7 +48,7 @@ export default function AppNotificationDrawer(
                         isExpanded={backendNotificationGroupExpanded}
                         onExpand={toggleBackendDrawer}
                         title={"Backend Notifications"}
-                        count={backendNotifications.length}
+                        count={backendNotifications.filter(notification => !notification.read).length}
                     >
                         <NotificationDrawerList
                             isHidden={!backendNotificationGroupExpanded}
@@ -48,6 +58,10 @@ export default function AppNotificationDrawer(
                                 backendNotifications.map((notification) => (
                                         <NotificationDrawerListItem
                                             variant={notification.severity}
+                                            isRead={notification.read}
+                                            onClick={() => toggleReadState(notification.id)}
+                                            key={notification.id}
+                                            tabIndex={notification.id}
                                         >
                                             <NotificationDrawerListItemHeader
                                                 title={notification.title}
@@ -62,7 +76,19 @@ export default function AppNotificationDrawer(
                                     )
                                 )
                             ) : (
-                                <div style={{ padding: '1rem', color: '#666' }}>No notifications to display</div>
+                                <NotificationDrawerListItem
+                                    variant="success"
+                                >
+                                    <NotificationDrawerListItemHeader
+                                        title="No new notifications"
+                                        variant="sucess"
+                                    />
+                                    <NotificationDrawerListItemBody
+                                        timestamp={new Date().toISOString()}
+                                    >
+                                        No new notifications.
+                                    </NotificationDrawerListItemBody>
+                                </NotificationDrawerListItem>
                             )}
                         </NotificationDrawerList>
                     </NotificationDrawerGroup>

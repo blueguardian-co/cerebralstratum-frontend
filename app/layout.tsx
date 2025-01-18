@@ -16,18 +16,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = React.useState(false);
     const onCloseNotificationDrawer = (event) => {setIsNotificationDrawerOpen((prevState) => !prevState);};
     const [backendNotificationGroupExpanded, setBackendNotificationGroupExpanded] = React.useState(false);
-    const [backendNotifications, setBackendNotifications] = React.useState(
-        [
-            {
-                id: -1,
-                title: 'Initializing...',
-                description: 'Fetching backend status...',
-                severity: 'info',
-                timestamp: new Date().toISOString(),
-            }
-        ]
-    );
+    const [backendNotifications, setBackendNotifications] = React.useState(() => {
+        if (typeof window !== 'undefined') {
+            const savedNotifications = localStorage.getItem('backend_notifications');
+            return savedNotifications
+                ? JSON.parse(savedNotifications)
+                : [
+                    {
+                        id: -1,
+                        title: 'Initializing...',
+                        description: 'Fetching backend status...',
+                        severity: 'info',
+                        timestamp: new Date().toISOString(),
+                        read: false,
+                    }
+                ];
+        } else {
+            return [
+                {
+                    id: -1,
+                    title: 'Initializing...',
+                    description: 'Fetching backend status...',
+                    severity: 'info',
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                }
+            ];
+        }
+    });
 
+    React.useEffect(() => {
+        localStorage.setItem('backend_notifications', JSON.stringify(backendNotifications));
+    }, [backendNotifications]);
+    
     return (
         <html lang="en">
         <body>

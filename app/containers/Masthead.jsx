@@ -122,7 +122,7 @@ export default function AppMasthead(
                 generateAvatarUrl();
             }
         }, [isAuthenticated, user?.email]);
-        
+
         return (
             <Masthead id="page-masthead">
                 <MastheadMain>
@@ -177,7 +177,7 @@ export default function AppMasthead(
                                 <ToolbarItem visibility={{ default: 'visible' }} selected={isNotificationDrawerOpen}>
                                     <NotificationBadge
                                         variant={
-                                            backendNotifications.length > 0
+                                            backendNotifications.some(notification => !notification.read)
                                                 ? NotificationBadgeVariant.unread
                                                 : NotificationBadgeVariant.read
                                         }

@@ -19,6 +19,7 @@ export default function BackendNotificationService({ backendNotifications, setBa
                             description: 'There is something degrading the connection with the backend.',
                             severity: 'warning',
                             timestamp: new Date().toISOString(),
+                            read: false,
                         }
                     ]
                 } else {
@@ -27,8 +28,9 @@ export default function BackendNotificationService({ backendNotifications, setBa
                             id: 0,
                             title: 'Backend online',
                             description: 'Successfully connected to the backend.',
-                            severity: 'info',
+                            severity: 'success',
                             timestamp: new Date().toISOString(),
+                            read: false,
                         }
                     ]
                 }
@@ -41,6 +43,7 @@ export default function BackendNotificationService({ backendNotifications, setBa
                             description: 'This is an error when connecting to the backend.',
                             severity: 'warning',
                             timestamp: new Date().toISOString(),
+                            read: false,
                         }
                     ]
                     setBackendNotifications(notifications);
