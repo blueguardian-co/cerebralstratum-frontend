@@ -7,19 +7,61 @@ import {
 } from '@patternfly/react-core';
 import AppMasthead from './containers/Masthead';
 import AppSidebar from './containers/Sidebar';
+import AppNotificationDrawer from "./containers/NotificationDrawer";
 import AuthProvider from "./components/AuthProvider";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
     const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = React.useState(false);
+    const onCloseNotificationDrawer = (event) => {setIsNotificationDrawerOpen((prevState) => !prevState);};
+    const [backendNotificationGroupExpanded, setBackendNotificationGroupExpanded] = React.useState(false);
+    const [backendNotifications, setBackendNotifications] = React.useState(
+        [
+            {
+                id: -1,
+                title: 'Initializing...',
+                description: 'Fetching backend status...',
+                severity: 'info',
+                timestamp: new Date().toISOString(),
+            }
+        ]
+    );
 
     return (
         <html lang="en">
         <body>
         <AuthProvider>
         <Page
-            masthead={ <AppMasthead isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} /> }
-            sidebar={ <AppSidebar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} /> }
+            masthead={
+                <AppMasthead
+                    isSidebarOpen={isSidebarOpen}
+                    setSidebarOpen={setSidebarOpen}
+                    backendNotifications={backendNotifications}
+                    setBackendNotifications={setBackendNotifications}
+                    isNotificationDrawerOpen={isNotificationDrawerOpen}
+                    setIsNotificationDrawerOpen={setIsNotificationDrawerOpen}
+                    onCloseNotificationDrawer={onCloseNotificationDrawer}
+                />
+            }
+            sidebar={
+                <AppSidebar
+                    isSidebarOpen={isSidebarOpen}
+                    setSidebarOpen={setSidebarOpen}
+                />
+            }
+            notificationDrawer={
+                isNotificationDrawerOpen && (
+                <AppNotificationDrawer
+                    onCloseNotificationDrawer={onCloseNotificationDrawer}
+                    isNotificationDrawerOpen={isNotificationDrawerOpen}
+                    backendNotificationGroupExpanded={backendNotificationGroupExpanded}
+                    setBackendNotificationGroupExpanded={setBackendNotificationGroupExpanded}
+                    backendNotifications={backendNotifications}
+                    setBackendNotifications={setBackendNotifications}
+                />)
+            }
+            isNotificationDrawerExpanded={isNotificationDrawerOpen}
         >
             {children}
         </Page>

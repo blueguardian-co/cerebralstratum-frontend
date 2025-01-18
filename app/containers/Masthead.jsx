@@ -1,6 +1,8 @@
 'use client'
 
 import { useAuth } from "../components/AuthProvider";
+import AppNotificationDrawer from "./NotificationDrawer";
+import BackendNotificationService from "../services/BackendNotifications";
 import React, { useState, useContext, useEffect } from 'react';
 import {
     Toolbar,
@@ -12,6 +14,8 @@ import {
     PageSidebar,
     PageSidebarBody,
     PageToggleButton,
+    NotificationBadge,
+    NotificationBadgeVariant,
     MenuToggle,
     MenuToggleElement,
     Masthead,
@@ -35,12 +39,22 @@ import {
     Avatar
 } from '@patternfly/react-core';
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
+import BellIcon from '@patternfly/react-icons/dist/esm/icons/bell-icon';
 import { MicrochipIcon } from '@patternfly/react-icons/dist/esm/icons/microchip-icon';
 
 /* TODO:
 - Neaten up CSS for Masthead to have it more consistent
 */
-export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
+export default function AppMasthead(
+    {
+        isSidebarOpen,
+        setSidebarOpen,
+        isNotificationDrawerOpen,
+        onCloseNotificationDrawer,
+        backendNotifications,
+        setBackendNotifications
+    }
+) {
     const { isAuthenticated, user, login, logout } = useAuth();
     const [isAccountOpen, setIsAccountOpen] = React.useState(false);
     const [isDeviceOpen, setIsDeviceOpen] = React.useState(false);
@@ -108,7 +122,7 @@ export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
                 generateAvatarUrl();
             }
         }, [isAuthenticated, user?.email]);
-
+        
         return (
             <Masthead id="page-masthead">
                 <MastheadMain>
@@ -160,6 +174,20 @@ export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
                                 </ToolbarContent>
                             </ToolbarGroup>
                             <ToolbarGroup align={{default: 'alignEnd'}}>
+                                <ToolbarItem visibility={{ default: 'visible' }} selected={isNotificationDrawerOpen}>
+                                    <NotificationBadge
+                                        variant={
+                                            backendNotifications.length > 0
+                                                ? NotificationBadgeVariant.unread
+                                                : NotificationBadgeVariant.read
+                                        }
+                                        onClick={onCloseNotificationDrawer}
+                                        aria-label="Notifications"
+                                        isExpanded={isNotificationDrawerOpen}
+                                    >
+                                        <BellIcon />
+                                    </NotificationBadge>
+                                </ToolbarItem>
                                 <ToolbarItem>
                                     <Dropdown
                                         isOpen={isAccountOpen}
@@ -205,6 +233,10 @@ export default function AppMasthead({ isSidebarOpen, setSidebarOpen }) {
                         </ToolbarContent>
                     </Toolbar>
                 </MastheadContent>
+                <BackendNotificationService
+                    backendNotifications={backendNotifications}
+                    setBackendNotifications={setBackendNotifications}
+                />
             </Masthead>
         );
     }
