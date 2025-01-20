@@ -184,8 +184,8 @@ export default function AppMasthead(
                                         onClick={onCloseNotificationDrawer}
                                         aria-label="Notifications"
                                         isExpanded={isNotificationDrawerOpen}
+                                        ouiaId="NotificationBadge"
                                     >
-                                        <BellIcon />
                                     </NotificationBadge>
                                 </ToolbarItem>
                                 <ToolbarItem>

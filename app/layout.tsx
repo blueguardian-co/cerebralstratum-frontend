@@ -15,7 +15,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = React.useState(false);
     const onCloseNotificationDrawer = (event) => {setIsNotificationDrawerOpen((prevState) => !prevState);};
-    const [backendNotificationGroupExpanded, setBackendNotificationGroupExpanded] = React.useState(false);
+    const [backendNotificationGroupExpanded, setBackendNotificationGroupExpanded] = React.useState(true);
+
     const [backendNotifications, setBackendNotifications] = React.useState(() => {
         if (typeof window !== 'undefined') {
             const savedNotifications = localStorage.getItem('backend_notifications');

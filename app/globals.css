@@ -3,6 +3,12 @@
 .map-container {
   min-width: 200px;
   width: 95vw;
+  max-width: 100%;
+
   min-height: 400px;
   height: 86vh;
+  max-height: 100vh;
+
+  overflow: hidden;
+  position: relative;
 }
