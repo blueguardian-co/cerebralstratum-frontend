@@ -224,6 +224,9 @@ export default function AppMasthead(
                                                 Account
                                             </Content>
                                         </DropdownItem>
+                                        <DropdownItem isDisabled={true} ouiaId="ManageSubscriptionButton">
+                                            Manage Subscription
+                                        </DropdownItem>
                                         <DropdownItem onClick={logout} ouiaId="LogoutButton">
                                             Logout
                                         </DropdownItem>
