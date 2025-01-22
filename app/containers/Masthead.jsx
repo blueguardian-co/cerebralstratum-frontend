@@ -142,7 +142,7 @@ export default function AppMasthead(
                 <MastheadContent>
                     <Toolbar id="masthead-toolbar" isFullHeight={true}>
                         <ToolbarContent>
-                            <ToolbarGroup align={{default: 'alignStart'}}>
+                            <ToolbarGroup align={{default: 'alignStart'}} alignItems={"center"}>
                                 <ToolbarContent>
                                     <ToolbarItem>
                                         <Dropdown
@@ -173,7 +173,7 @@ export default function AppMasthead(
                                     </ToolbarItem>
                                 </ToolbarContent>
                             </ToolbarGroup>
-                            <ToolbarGroup align={{default: 'alignEnd'}}>
+                            <ToolbarGroup align={{default: 'alignEnd'}} alignItems={"center"}>
                                 <ToolbarItem visibility={{ default: 'visible' }} selected={isNotificationDrawerOpen}>
                                     <NotificationBadge
                                         variant={
