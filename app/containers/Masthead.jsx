@@ -3,6 +3,7 @@
 import { useAuth } from "../components/AuthProvider";
 import AppNotificationDrawer from "./NotificationDrawer";
 import BackendNotificationService from "../services/BackendNotifications";
+import SubscriptionNotificationService from "../services/SubscriptionNotifications";
 import React, { useState, useContext, useEffect } from 'react';
 import {
     Toolbar,
@@ -38,6 +39,8 @@ import {
     Button,
     Avatar
 } from '@patternfly/react-core';
+import Image from 'next/image';
+
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
 import BellIcon from '@patternfly/react-icons/dist/esm/icons/bell-icon';
 import { MicrochipIcon } from '@patternfly/react-icons/dist/esm/icons/microchip-icon';
@@ -45,6 +48,13 @@ import { MicrochipIcon } from '@patternfly/react-icons/dist/esm/icons/microchip-
 /* TODO:
 - Neaten up CSS for Masthead to have it more consistent
 */
+
+function countUnreadNotifications(backendNotifications, subscriptionNotifications) {
+    const backendUnreadCount = backendNotifications.filter(notification => !notification.read).length;
+    const subscriptionUnreadCount = subscriptionNotifications.filter(notification => !notification.read).length;
+    return backendUnreadCount + subscriptionUnreadCount;
+}
+
 export default function AppMasthead(
     {
         isSidebarOpen,
@@ -52,7 +62,10 @@ export default function AppMasthead(
         isNotificationDrawerOpen,
         onCloseNotificationDrawer,
         backendNotifications,
-        setBackendNotifications
+        setBackendNotifications,
+        subscriptionNotifications,
+        setSubscriptionNotifications,
+        userProfile,
     }
 ) {
     const { isAuthenticated, user, login, logout } = useAuth();
@@ -70,17 +83,15 @@ export default function AppMasthead(
         return(
             <Masthead id="page-masthead">
                 <MastheadMain>
-                    {/*<MastheadToggle>*/}
-                    {/*    <PageToggleButton*/}
-                    {/*        aria-label="Global navigation"*/}
-                    {/*        variant="plain"*/}
-                    {/*        onClick={() => setSidebarOpen(!isSidebarOpen)}*/}
-                    {/*    >*/}
-                    {/*        <BarsIcon />*/}
-                    {/*    </PageToggleButton>*/}
-                    {/*</MastheadToggle>*/}
                     <MastheadBrand>
-                        <MastheadLogo component="a">BLUEGUARDIAN CO</MastheadLogo>
+                        <MastheadLogo>
+                            <Image
+                                src={"/cerebral-stratum.svg"}
+                                alt="CEREBRAL STRATUM Logo"
+                                width={50}
+                                height={50}
+                            />
+                        </MastheadLogo>
                     </MastheadBrand>
                 </MastheadMain>
                 <MastheadContent>
@@ -98,6 +109,12 @@ export default function AppMasthead(
         );
     }
     if (isAuthenticated) {
+        React.useEffect(() => {
+            const backendUserProfile = async () => {
+                await BackendUserProfile
+            };
+        });
+        
         const [avatarUrl, setAvatarUrl] = useState( "https://www.gravatar.com/avatar/?s=50&d=identicon");
 
         const getGravatarUrl = async (email) => {
@@ -126,18 +143,14 @@ export default function AppMasthead(
         return (
             <Masthead id="page-masthead">
                 <MastheadMain>
-                    {/*<MastheadToggle>*/}
-                    {/*    <PageToggleButton*/}
-                    {/*        aria-label="Global navigation"*/}
-                    {/*        variant="plain"*/}
-                    {/*        onClick={() => setSidebarOpen(!isSidebarOpen)}*/}
-                    {/*    >*/}
-                    {/*        <BarsIcon />*/}
-                    {/*    </PageToggleButton>*/}
-                    {/*</MastheadToggle>*/}
-                    <MastheadBrand>
-                        <MastheadLogo>BLUEGUARDIAN CO</MastheadLogo>
-                    </MastheadBrand>
+                    <MastheadLogo>
+                        <Image
+                            src={"/cerebral-stratum.svg"}
+                            alt="CEREBRAL STRATUM Logo"
+                            width={50}
+                            height={50}
+                        />
+                    </MastheadLogo>
                 </MastheadMain>
                 <MastheadContent>
                     <Toolbar id="masthead-toolbar" isFullHeight={true}>
@@ -164,6 +177,7 @@ export default function AppMasthead(
                                             shouldFocusToggleOnSelect
                                         >
                                             <DropdownItem  ouiaId="DeviceRegistrationButton">
+                                                {/* if subscription_entitlement > subscription_used, enable buttom */}
                                                 Register Device
                                             </DropdownItem>
                                         </Dropdown>
@@ -177,10 +191,11 @@ export default function AppMasthead(
                                 <ToolbarItem visibility={{ default: 'visible' }} selected={isNotificationDrawerOpen}>
                                     <NotificationBadge
                                         variant={
-                                            backendNotifications.some(notification => !notification.read)
+                                            countUnreadNotifications(backendNotifications, subscriptionNotifications) > 0
                                                 ? NotificationBadgeVariant.unread
                                                 : NotificationBadgeVariant.read
                                         }
+                                        count={countUnreadNotifications(backendNotifications, subscriptionNotifications)}
                                         onClick={onCloseNotificationDrawer}
                                         aria-label="Notifications"
                                         isExpanded={isNotificationDrawerOpen}
@@ -239,6 +254,11 @@ export default function AppMasthead(
                 <BackendNotificationService
                     backendNotifications={backendNotifications}
                     setBackendNotifications={setBackendNotifications}
+                />
+                <SubscriptionNotificationService
+                    subscriptionNotifications={subscriptionNotifications}
+                    setSubscriptionNotifications={setSubscriptionNotifications}
+                    userProfile={userProfile}
                 />
             </Masthead>
         );

@@ -22,14 +22,19 @@ export default function AppNotificationDrawer(
         setBackendNotificationGroupExpanded,
         backendNotifications,
         setBackendNotifications,
+        subscriptionNotificationGroupExpanded,
+        setSubscriptionNotificationGroupExpanded,
+        subscriptionNotifications,
+        setSubscriptionNotifications,
     }
 ){
 
+    /* Backend Notification State Management */
     const toggleBackendDrawer = (_event, value) => {
         setBackendNotificationGroupExpanded(value);
     };
 
-    const toggleReadState = (id) => {
+    const toggleBackendNotificationReadState = (id) => {
         setBackendNotifications((prevNotifications) =>
             prevNotifications.map((notification) =>
                 notification.id === id
@@ -38,6 +43,22 @@ export default function AppNotificationDrawer(
             )
         );
     };
+
+    /* Subscription Notification State Management */
+    const toggleSubscriptionDrawer = (_event, value) => {
+        setSubscriptionNotificationGroupExpanded(value);
+    };
+
+    const toggleSubscriptionNotificationReadState = (id) => {
+        setSubscriptionNotifications((prevNotifications) =>
+            prevNotifications.map((notification) =>
+                notification.id === id
+                    ? { ...notification, read: !notification.read }
+                    : notification
+            )
+        );
+    };
+
 
     return (
         <NotificationDrawer>
@@ -59,7 +80,7 @@ export default function AppNotificationDrawer(
                                         <NotificationDrawerListItem
                                             variant={notification.severity}
                                             isRead={notification.read}
-                                            onClick={() => toggleReadState(notification.id)}
+                                            onClick={() => toggleBackendNotificationReadState(notification.id)}
                                             key={notification.id}
                                             tabIndex={notification.id}
                                         >
@@ -70,7 +91,7 @@ export default function AppNotificationDrawer(
                                             <NotificationDrawerListItemBody
                                                 timestamp={notification.timestamp}
                                             >
-                                                {notification.body}
+                                                {notification.description}
                                             </NotificationDrawerListItemBody>
                                         </NotificationDrawerListItem>
                                     )
@@ -81,7 +102,55 @@ export default function AppNotificationDrawer(
                                 >
                                     <NotificationDrawerListItemHeader
                                         title="No new notifications"
-                                        variant="sucess"
+                                        variant="success"
+                                    />
+                                    <NotificationDrawerListItemBody
+                                        timestamp={new Date().toISOString()}
+                                    >
+                                        No new notifications.
+                                    </NotificationDrawerListItemBody>
+                                </NotificationDrawerListItem>
+                            )}
+                        </NotificationDrawerList>
+                    </NotificationDrawerGroup>
+                    <NotificationDrawerGroup
+                        isExpanded={subscriptionNotificationGroupExpanded}
+                        onExpand={toggleSubscriptionDrawer}
+                        title={"Subscription Notifications"}
+                        count={subscriptionNotifications.filter(notification => !notification.read).length}
+                    >
+                        <NotificationDrawerList
+                            isHidden={!subscriptionNotificationGroupExpanded}
+                            aria-label="Subscription Notifications"
+                        >
+                            {subscriptionNotifications.length > 0 ? (
+                                subscriptionNotifications.map((notification) => (
+                                        <NotificationDrawerListItem
+                                            variant={notification.severity}
+                                            isRead={notification.read}
+                                            onClick={() => toggleSubscriptionNotificationReadState(notification.id)}
+                                            key={notification.id}
+                                            tabIndex={notification.id}
+                                        >
+                                            <NotificationDrawerListItemHeader
+                                                title={notification.title}
+                                                variant={notification.severity}
+                                            />
+                                            <NotificationDrawerListItemBody
+                                                timestamp={notification.timestamp}
+                                            >
+                                                {notification.description}
+                                            </NotificationDrawerListItemBody>
+                                        </NotificationDrawerListItem>
+                                    )
+                                )
+                            ) : (
+                                <NotificationDrawerListItem
+                                    variant="success"
+                                >
+                                    <NotificationDrawerListItemHeader
+                                        title="No new notifications"
+                                        variant="success"
                                     />
                                     <NotificationDrawerListItemBody
                                         timestamp={new Date().toISOString()}

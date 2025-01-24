@@ -3,6 +3,8 @@ import React, { useEffect, useState, createContext, useContext, ReactNode } from
 import Keycloak, { KeycloakConfig, KeycloakInstance } from "keycloak-js";
 import { jwtDecode } from "jwt-decode";
 
+import apiClient, { configureHeaders } from "./ApiClient";
+
 // -------- Keycloak Configuration -------- //
 const keycloakConfig: KeycloakConfig = {
     url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || "http://localhost:8080",
@@ -10,13 +12,24 @@ const keycloakConfig: KeycloakConfig = {
     clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENTID || "cerebral-stratum-frontend",
 };
 
+type BackendUserProfile = {
+    keycloak_user_id: string;
+    keycloak_org_id: string;
+    created: Date;
+    subscription_active: boolean;
+    subscription_discount: number;
+    subscription_entitlement: number;
+    subscription_used: number;
+}
+
 const keycloak = new Keycloak(keycloakConfig);
 
 // -------- Context Setup -------- //
 type AuthContextValue = {
     isAuthenticated: boolean;
-    token: string | undefined;
+    token: string | null;
     user: KeycloakTokenPayload | null;
+    backendUserProfile: BackendUserProfile | null;
     keycloak: KeycloakInstance;
     login: () => void;
     logout: () => void;
@@ -31,6 +44,7 @@ interface AuthProviderProps {
 }
 
 type KeycloakTokenPayload = {
+    sub: string;
     given_name?: string;
     family_name?: string;
     email?: string;
@@ -39,9 +53,10 @@ type KeycloakTokenPayload = {
 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [token, setToken] = useState<string | undefined>(undefined);
+    const [token, setToken] = useState<string | null>(null);
     const [user, setUser] = useState<KeycloakTokenPayload | null>(null);
     const [isAuthInitialized, setIsAuthInitialized] = useState(false);
+    const [backendUserProfile, setBackendUserProfile] = useState<BackendUserProfile | null>(null);
 
     const decodeToken = (token: string) => {
         try {
@@ -52,6 +67,21 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.error("Failed to decode token:", error);
         }
     };
+
+    const fetchBackendUserProfile = async (token: string, userId: string) => {
+        try {
+            configureHeaders(token);
+            const response = await apiClient.get(`/api/v1/authorisation/users/${userId}`);
+            if (response.status === 200) {
+                setBackendUserProfile(response.data);
+            } else {
+                console.warn(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching the user profile:", error);
+        }
+    };
+
 
     const initKeycloak = async () => {
         try {
@@ -92,7 +122,6 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    // Login method (manual trigger)
     const login = async () => {
         try {
             await keycloak.login({
@@ -105,18 +134,24 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    // Logout method
     const logout = async () => {
         try {
             await keycloak.logout({
                 redirectUri: window.location.origin, // Redirect to home after logout
             });
             setIsAuthenticated(false);
-            setToken(undefined);
+            setToken(null);
         } catch (error) {
             console.error("Logout error:", error);
         }
     };
+
+    useEffect(() => {
+        if (user && token) {
+            fetchBackendUserProfile(token, user.sub);
+        }
+    }, [user, token]);
+
 
     // Initialize Keycloak on component mount
     useEffect(() => {
@@ -137,14 +172,22 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, token, user, keycloak, login, logout, refreshToken }}>
+        <AuthContext.Provider value={{
+            isAuthenticated,
+            token,
+            user,
+            backendUserProfile,
+            keycloak,
+            login,
+            logout,
+            refreshToken
+        }}>
             {children}
         </AuthContext.Provider>
     );
 };
 
 // -------- useAuth Hook -------- //
-// A custom hook to use the AuthContext
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
