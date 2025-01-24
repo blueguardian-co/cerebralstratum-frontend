@@ -36,10 +36,10 @@ import {
     DropdownList,
     ContentVariants,
     Content,
+    Brand,
     Button,
     Avatar
 } from '@patternfly/react-core';
-import Image from 'next/image';
 
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
 import BellIcon from '@patternfly/react-icons/dist/esm/icons/bell-icon';
@@ -53,6 +53,16 @@ function countUnreadNotifications(backendNotifications, subscriptionNotification
     const backendUnreadCount = backendNotifications.filter(notification => !notification.read).length;
     const subscriptionUnreadCount = subscriptionNotifications.filter(notification => !notification.read).length;
     return backendUnreadCount + subscriptionUnreadCount;
+}
+
+function isSubscriptionEntitlementExhausted(userProfile) {
+    if (userProfile === null ) {
+        return true;
+    }
+    if (userProfile.subscription_entitlement >= userProfile.subscription_used){
+        return false;
+    }
+    return true;
 }
 
 export default function AppMasthead(
@@ -85,11 +95,11 @@ export default function AppMasthead(
                 <MastheadMain>
                     <MastheadBrand>
                         <MastheadLogo>
-                            <Image
+                            <Brand
                                 src={"/cerebral-stratum.svg"}
                                 alt="CEREBRAL STRATUM Logo"
-                                width={50}
-                                height={50}
+                                widths={{ default: '50px' }}
+                                heights={{ default: '50px' }}
                             />
                         </MastheadLogo>
                     </MastheadBrand>
@@ -144,11 +154,11 @@ export default function AppMasthead(
             <Masthead id="page-masthead">
                 <MastheadMain>
                     <MastheadLogo>
-                        <Image
+                        <Brand
                             src={"/cerebral-stratum.svg"}
                             alt="CEREBRAL STRATUM Logo"
-                            width={50}
-                            height={50}
+                            widths={{ default: '50px' }}
+                            heights={{ default: '50px' }}
                         />
                     </MastheadLogo>
                 </MastheadMain>
@@ -176,8 +186,7 @@ export default function AppMasthead(
                                             )}
                                             shouldFocusToggleOnSelect
                                         >
-                                            <DropdownItem  ouiaId="DeviceRegistrationButton">
-                                                {/* if subscription_entitlement > subscription_used, enable buttom */}
+                                            <DropdownItem  ouiaId="DeviceRegistrationButton" isDisabled={isSubscriptionEntitlementExhausted(userProfile)}>
                                                 Register Device
                                             </DropdownItem>
                                         </Dropdown>

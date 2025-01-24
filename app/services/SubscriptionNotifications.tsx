@@ -5,7 +5,6 @@ export default function SubscriptionNotificationService({ subscriptionNotificati
     useEffect(() => {
         const fetchSubscriptionNotifications = async () => {
                 if (subscriptionNotifications[0].title === 'Initializing...') {
-                    console.log('Subscription notifications are initialising.');
                     return;
                 }
                 if ((subscriptionNotifications[0].title === 'Subscription fully utilised' || subscriptionNotifications[0].title === 'Subscription utilisation') && subscriptionNotifications[0].read === true) {

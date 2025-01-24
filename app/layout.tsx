@@ -1,15 +1,14 @@
 'use client'
 
 import "./globals.css";
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Page
 } from '@patternfly/react-core';
 import AppMasthead from './containers/Masthead';
 import AppSidebar from './containers/Sidebar';
 import AppNotificationDrawer from "./containers/NotificationDrawer";
-import AuthProvider, { useAuth } from "./components/AuthProvider";
-import apiClient, { configureHeaders } from "./components/ApiClient";
+import AuthProvider from "./components/AuthProvider";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 

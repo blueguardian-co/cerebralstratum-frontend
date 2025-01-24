@@ -2,13 +2,21 @@ import React, { useEffect } from "react";
 import apiClient, { configureHeaders } from "../components/ApiClient";
 import { useAuth } from "../components/AuthProvider";
 
-export default function BackendNotificationService({ backendNotifications, setBackendNotifications }) {
+type BackendNotification = {
+    id: number,
+    title: string,
+    description: string,
+    severity: 'success' | 'warning' | 'info',
+    timestamp: string,
+    read: boolean,
+}
+
+export default function BackendNotificationService({backendNotifications, setBackendNotifications }) {
     const { token } = useAuth();
 
     useEffect(() => {
         const fetchBackendNotifications = async () => {
             if (backendNotifications[0].title === 'Initializing...') {
-                console.log('Backend notifications are initialising.');
                 return;
             }
             try {
@@ -16,6 +24,9 @@ export default function BackendNotificationService({ backendNotifications, setBa
                 configureHeaders(token);
                 const response = await apiClient.get('/q/health');
                 if (response.status !== 200) {
+                    if (backendNotifications[0].title === 'Connection to the backend is unhealthy' && backendNotifications[0].read === true) {
+                        return;
+                    }
                     setBackendNotifications(
                         [
                             {
@@ -29,6 +40,9 @@ export default function BackendNotificationService({ backendNotifications, setBa
                         ]
                     );
                 } else {
+                    if (backendNotifications[0].title === 'Backend online' && backendNotifications[0].read === true) {
+                        return;
+                    }
                     setBackendNotifications(
                         [
                             {
@@ -43,6 +57,9 @@ export default function BackendNotificationService({ backendNotifications, setBa
                     );
                 }
             } catch(error) {
+                if (backendNotifications[0].title === 'Error connecting to the backend' && backendNotifications[0].read === true) {
+                    return;
+                }
                 setBackendNotifications(
                     [
                         {
