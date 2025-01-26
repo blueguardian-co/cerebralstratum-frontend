@@ -22,7 +22,7 @@ export default function BackendNotificationService({backendNotifications, setBac
             try {
                 // Configure headers dynamically with the token
                 configureHeaders(token);
-                const response = await apiClient.get('/q/health');
+                const response = await apiClient.get('/q/health/live');
                 if (response.status !== 200) {
                     if (backendNotifications[0].title === 'Connection to the backend is unhealthy' && backendNotifications[0].read === true) {
                         return;
