@@ -96,9 +96,9 @@ export default function AppMasthead(
                     <MastheadBrand>
                         <MastheadLogo>
                             <Brand
-                                src={"/cerebral-stratum-lightmode.svg"}
+                                src={"/cerebral-stratum-lightmode-full.png"}
                                 alt="CEREBRAL STRATUM Logo"
-                                widths={{ default: '50px' }}
+                                widths={{ default: '500px' }}
                                 heights={{ default: '50px' }}
                             />
                         </MastheadLogo>
@@ -155,9 +155,9 @@ export default function AppMasthead(
                 <MastheadMain>
                     <MastheadLogo>
                         <Brand
-                            src={"/cerebral-stratum-lightmode.svg"}
+                            src={"/cerebral-stratum-lightmode-full.png"}
                             alt="CEREBRAL STRATUM Logo"
-                            widths={{ default: '50px' }}
+                            widths={{ default: '500px' }}
                             heights={{ default: '50px' }}
                         />
                     </MastheadLogo>
