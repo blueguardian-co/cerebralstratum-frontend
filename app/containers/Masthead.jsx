@@ -10,6 +10,7 @@ import {
     ToolbarItem,
     ToolbarGroup,
     ToolbarContent,
+    Switch,
     SearchInput,
     Page,
     PageSidebar,
@@ -67,6 +68,8 @@ function isSubscriptionEntitlementExhausted(userProfile) {
 
 export default function AppMasthead(
     {
+        isDarkThemeEnabled,
+        setDarkThemeEnabled,
         isSidebarOpen,
         setSidebarOpen,
         isNotificationDrawerOpen,
@@ -89,6 +92,10 @@ export default function AppMasthead(
         setIsDeviceOpen(!isDeviceOpen);
     };
 
+    const onDarkThemeToggleClick = () => {
+        setDarkThemeEnabled(!isDarkThemeEnabled);
+    };
+
     if (!isAuthenticated) {
         return(
             <Masthead id="page-masthead">
@@ -96,7 +103,11 @@ export default function AppMasthead(
                     <MastheadBrand>
                         <MastheadLogo>
                             <Brand
-                                src={"/cerebral-stratum-lightmode-full.png"}
+                                src={
+                                    isDarkThemeEnabled
+                                    ? "/cerebral-stratum-darkmode-full.png"
+                                    : "/cerebral-stratum-lightmode-full.png"
+                                }
                                 alt="CEREBRAL STRATUM Logo"
                                 widths={{ default: '500px' }}
                                 heights={{ default: '50px' }}
@@ -155,7 +166,11 @@ export default function AppMasthead(
                 <MastheadMain>
                     <MastheadLogo>
                         <Brand
-                            src={"/cerebral-stratum-lightmode-full.png"}
+                            src={
+                                isDarkThemeEnabled
+                                    ? "/cerebral-stratum-darkmode-full.png"
+                                    : "/cerebral-stratum-lightmode-full.png"
+                            }
                             alt="CEREBRAL STRATUM Logo"
                             widths={{ default: '500px' }}
                             heights={{ default: '50px' }}
@@ -197,6 +212,18 @@ export default function AppMasthead(
                                 </ToolbarContent>
                             </ToolbarGroup>
                             <ToolbarGroup align={{default: 'alignEnd'}} alignItems={"center"}>
+                                <ToolbarItem>
+                                    <Switch
+                                        id="dark-theme-switch"
+                                        aria-label="Toggle dark theme"
+                                        label={"Toggle Theme"}
+                                        hasCheckIcon
+                                        isChecked={isDarkThemeEnabled}
+                                        isReversed
+                                        onChange={onDarkThemeToggleClick}
+                                        ouiaId="DarkThemeSwitch"
+                                    />
+                                </ToolbarItem>
                                 <ToolbarItem visibility={{ default: 'visible' }} selected={isNotificationDrawerOpen}>
                                     <NotificationBadge
                                         variant={
