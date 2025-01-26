@@ -10,7 +10,8 @@ import {
     ToolbarItem,
     ToolbarGroup,
     ToolbarContent,
-    Switch,
+    ToggleGroup,
+    ToggleGroupItem,
     SearchInput,
     Page,
     PageSidebar,
@@ -45,6 +46,7 @@ import {
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
 import BellIcon from '@patternfly/react-icons/dist/esm/icons/bell-icon';
 import { MicrochipIcon } from '@patternfly/react-icons/dist/esm/icons/microchip-icon';
+import Image from 'next/image';
 
 /* TODO:
 - Neaten up CSS for Masthead to have it more consistent
@@ -213,16 +215,36 @@ export default function AppMasthead(
                             </ToolbarGroup>
                             <ToolbarGroup align={{default: 'alignEnd'}} alignItems={"center"}>
                                 <ToolbarItem>
-                                    <Switch
-                                        id="dark-theme-switch"
-                                        aria-label="Toggle dark theme"
-                                        label={"Toggle Theme"}
-                                        hasCheckIcon
-                                        isChecked={isDarkThemeEnabled}
-                                        isReversed
-                                        onChange={onDarkThemeToggleClick}
-                                        ouiaId="DarkThemeSwitch"
-                                    />
+                                    <ToggleGroup aria-label="Dark theme toggle">
+                                        <ToggleGroupItem
+                                            icon={<Image
+                                                src={"/fa-sun.svg"}
+                                                alt={"Light Theme icon"}
+                                                width={"20"}
+                                                height={"20"}
+                                                style={isDarkThemeEnabled ? {filter: "invert(1)"} : {filter: "invert(0)"}}
+                                            />}
+                                            aria-label={"Light Theme"}
+                                            buttonId={"toggle-group-light-theme"}
+                                            isSelected={!isDarkThemeEnabled}
+                                            onClick={onDarkThemeToggleClick}
+                                            ouiaId="LightThemeToggle"
+                                        />
+                                        <ToggleGroupItem
+                                            icon={<Image
+                                                src={"/fa-moon.svg"}
+                                                alt={"Dark Theme icon"}
+                                                width={"15"}
+                                                height={"15"}
+                                                style={isDarkThemeEnabled ? {filter: "invert(1)"} : {filter: "invert(0)"}}
+                                            />}
+                                            aria-label={"Dark Theme"}
+                                            buttonId={"toggle-group-dark-theme"}
+                                            isSelected={isDarkThemeEnabled}
+                                            onClick={onDarkThemeToggleClick}
+                                            ouiaId="DarkThemeToggle"
+                                        />
+                                    </ToggleGroup>
                                 </ToolbarItem>
                                 <ToolbarItem visibility={{ default: 'visible' }} selected={isNotificationDrawerOpen}>
                                     <NotificationBadge
