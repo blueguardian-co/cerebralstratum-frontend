@@ -45,6 +45,9 @@ import {
 
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
 import BellIcon from '@patternfly/react-icons/dist/esm/icons/bell-icon';
+import MoonIcon from '@patternfly/react-icons/dist/esm/icons/moon-icon';
+import SunIcon from '@patternfly/react-icons/dist/esm/icons/sun-icon';
+
 import { MicrochipIcon } from '@patternfly/react-icons/dist/esm/icons/microchip-icon';
 import Image from 'next/image';
 
@@ -111,7 +114,7 @@ export default function AppMasthead(
                                     : "/cerebral-stratum-lightmode-full.png"
                                 }
                                 alt="CEREBRAL STRATUM Logo"
-                                widths={{ default: '500px' }}
+                                widths={{ default: '350px' }}
                                 heights={{ default: '50px' }}
                             />
                         </MastheadLogo>
@@ -174,7 +177,7 @@ export default function AppMasthead(
                                     : "/cerebral-stratum-lightmode-full.png"
                             }
                             alt="CEREBRAL STRATUM Logo"
-                            widths={{ default: '500px' }}
+                            widths={{ default: '300px' }}
                             heights={{ default: '50px' }}
                         />
                     </MastheadLogo>
@@ -217,32 +220,18 @@ export default function AppMasthead(
                                 <ToolbarItem>
                                     <ToggleGroup aria-label="Dark theme toggle">
                                         <ToggleGroupItem
-                                            icon={<Image
-                                                src={"/fa-sun.svg"}
-                                                alt={"Light Theme icon"}
-                                                width={"20"}
-                                                height={"20"}
-                                                style={isDarkThemeEnabled ? {filter: "invert(1)"} : {filter: "invert(0)"}}
-                                            />}
+                                            icon={<SunIcon style={!isDarkThemeEnabled ? {filter: "invert(1)"} : {filter: "invert(0)"}} />}
                                             aria-label={"Light Theme"}
                                             buttonId={"toggle-group-light-theme"}
                                             isSelected={!isDarkThemeEnabled}
                                             onClick={onDarkThemeToggleClick}
-                                            ouiaId="LightThemeToggle"
                                         />
                                         <ToggleGroupItem
-                                            icon={<Image
-                                                src={"/fa-moon.svg"}
-                                                alt={"Dark Theme icon"}
-                                                width={"15"}
-                                                height={"15"}
-                                                style={isDarkThemeEnabled ? {filter: "invert(1)"} : {filter: "invert(0)"}}
-                                            />}
+                                            icon={<MoonIcon style={isDarkThemeEnabled ? {filter: "invert(1)"} : {filter: "invert(0)"}} />}
                                             aria-label={"Dark Theme"}
                                             buttonId={"toggle-group-dark-theme"}
                                             isSelected={isDarkThemeEnabled}
                                             onClick={onDarkThemeToggleClick}
-                                            ouiaId="DarkThemeToggle"
                                         />
                                     </ToggleGroup>
                                 </ToolbarItem>
@@ -274,13 +263,11 @@ export default function AppMasthead(
                                                 icon={<Avatar
                                                     src={avatarUrl}
                                                     alt={`${user?.preferred_username}'s avatar`}
-                                                    size="sm"
-                                                />
-                                                }
+                                                    className={"pf-v6-c-avatar pf-m-sm"}
+                                                    isBordered
+                                                />}
                                             >
-                                                <Content>
-                                                    {user?.given_name} {user?.family_name}
-                                                </Content>
+                                                {user?.given_name} {user?.family_name}
                                             </MenuToggle>
                                         )}
                                         shouldFocusToggleOnSelect
