@@ -3,7 +3,7 @@ import React, { useEffect, useState, createContext, useContext, ReactNode } from
 import Keycloak, { KeycloakConfig, KeycloakInstance } from "keycloak-js";
 import { jwtDecode } from "jwt-decode";
 
-import apiClient, { configureHeaders } from "./ApiClient";
+import apiClient, { configureHeaders } from "../components/ApiClient";
 
 // -------- Keycloak Configuration -------- //
 const keycloakConfig: KeycloakConfig = {
@@ -49,6 +49,7 @@ type KeycloakTokenPayload = {
     family_name?: string;
     email?: string;
     preferred_username?: string;
+    organisations?: string[];
 };
 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
@@ -71,7 +72,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const fetchBackendUserProfile = async (token: string, userId: string) => {
         try {
             configureHeaders(token);
-            const response = await apiClient.get(`/api/v1/authorisation/users/${userId}`);
+            const response = await apiClient.get(`/authorisation/users/${userId}`);
             if (response.status === 200) {
                 setBackendUserProfile(response.data);
             } else {

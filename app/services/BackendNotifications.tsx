@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import apiClient, { configureHeaders } from "../components/ApiClient";
-import { useAuth } from "../components/AuthProvider";
+import { useAuth } from "../providers/AuthProvider";
 
 type BackendNotification = {
     id: number,

@@ -8,7 +8,8 @@ import {
 import AppMasthead from './containers/Masthead';
 import AppSidebar from './containers/Sidebar';
 import AppNotificationDrawer from "./containers/NotificationDrawer";
-import AuthProvider from "./components/AuthProvider";
+import AuthProvider from "./providers/AuthProvider";
+import MyDevicesProvider from "./providers/MyDevices";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const [isDarkThemeEnabled, setDarkThemeEnabled] = useState(false);
@@ -130,30 +131,81 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <html lang="en" className={"pf-v6-theme-dark"}>
             <body>
             <AuthProvider>
-                <Page
-                    masthead={
-                        <AppMasthead
-                            isDarkThemeEnabled={isDarkThemeEnabled}
-                            setDarkThemeEnabled={setDarkThemeEnabled}
-                            isSidebarOpen={isSidebarOpen}
-                            setSidebarOpen={setSidebarOpen}
-                            backendNotifications={backendNotifications}
-                            setBackendNotifications={setBackendNotifications}
-                            subscriptionNotifications={subscriptionNotifications}
-                            setSubscriptionNotifications={setSubscriptionNotifications}
-                            isNotificationDrawerOpen={isNotificationDrawerOpen}
-                            onCloseNotificationDrawer={onCloseNotificationDrawer}
-                            userProfile={userProfile}
-                        />
-                    }
-                    sidebar={
-                        <AppSidebar
-                            isSidebarOpen={isSidebarOpen}
-                            setSidebarOpen={setSidebarOpen}
-                        />
-                    }
-                    notificationDrawer={
-                        isNotificationDrawerOpen && (
+                <MyDevicesProvider>
+                    <Page
+                        masthead={
+                            <AppMasthead
+                                isDarkThemeEnabled={isDarkThemeEnabled}
+                                setDarkThemeEnabled={setDarkThemeEnabled}
+                                isSidebarOpen={isSidebarOpen}
+                                setSidebarOpen={setSidebarOpen}
+                                backendNotifications={backendNotifications}
+                                setBackendNotifications={setBackendNotifications}
+                                subscriptionNotifications={subscriptionNotifications}
+                                setSubscriptionNotifications={setSubscriptionNotifications}
+                                isNotificationDrawerOpen={isNotificationDrawerOpen}
+                                onCloseNotificationDrawer={onCloseNotificationDrawer}
+                                userProfile={userProfile}
+                            />
+                        }
+                        sidebar={
+                            <AppSidebar
+                                isSidebarOpen={isSidebarOpen}
+                                setSidebarOpen={setSidebarOpen}
+                            />
+                        }
+                        notificationDrawer={
+                            isNotificationDrawerOpen && (
+                                <AppNotificationDrawer
+                                    onCloseNotificationDrawer={onCloseNotificationDrawer}
+                                    isNotificationDrawerOpen={isNotificationDrawerOpen}
+                                    backendNotificationGroupExpanded={backendNotificationGroupExpanded}
+                                    setBackendNotificationGroupExpanded={setBackendNotificationGroupExpanded}
+                                    backendNotifications={backendNotifications}
+                                    setBackendNotifications={setBackendNotifications}
+                                    setSubscriptionNotificationGroupExpanded={setSubscriptionNotificationGroupExpanded}
+                                    subscriptionNotificationGroupExpanded={subscriptionNotificationGroupExpanded}
+                                    subscriptionNotifications={subscriptionNotifications}
+                                    setSubscriptionNotifications={setSubscriptionNotifications}
+                                />)
+                        }
+                        isNotificationDrawerExpanded={isNotificationDrawerOpen}
+                    >
+                        {children}
+                    </Page>
+                </MyDevicesProvider>
+            </AuthProvider>
+            </body>
+            </html>
+        :
+            <html lang="en">
+            <body>
+            <AuthProvider>
+                <MyDevicesProvider>
+                    <Page
+                        masthead={
+                            <AppMasthead
+                                isDarkThemeEnabled={isDarkThemeEnabled}
+                                setDarkThemeEnabled={setDarkThemeEnabled}
+                                isSidebarOpen={isSidebarOpen}
+                                setSidebarOpen={setSidebarOpen}
+                                backendNotifications={backendNotifications}
+                                setBackendNotifications={setBackendNotifications}
+                                subscriptionNotifications={subscriptionNotifications}
+                                setSubscriptionNotifications={setSubscriptionNotifications}
+                                isNotificationDrawerOpen={isNotificationDrawerOpen}
+                                onCloseNotificationDrawer={onCloseNotificationDrawer}
+                                userProfile={userProfile}
+                            />
+                        }
+                        sidebar={
+                            <AppSidebar
+                                isSidebarOpen={isSidebarOpen}
+                                setSidebarOpen={setSidebarOpen}
+                            />
+                        }
+                        notificationDrawer={
+                            isNotificationDrawerOpen && (
                             <AppNotificationDrawer
                                 onCloseNotificationDrawer={onCloseNotificationDrawer}
                                 isNotificationDrawerOpen={isNotificationDrawerOpen}
@@ -166,59 +218,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                 subscriptionNotifications={subscriptionNotifications}
                                 setSubscriptionNotifications={setSubscriptionNotifications}
                             />)
-                    }
-                    isNotificationDrawerExpanded={isNotificationDrawerOpen}
-                >
-                    {children}
-                </Page>
-            </AuthProvider>
-            </body>
-            </html>
-        :
-            <html lang="en">
-            <body>
-            <AuthProvider>
-            <Page
-                masthead={
-                    <AppMasthead
-                        isDarkThemeEnabled={isDarkThemeEnabled}
-                        setDarkThemeEnabled={setDarkThemeEnabled}
-                        isSidebarOpen={isSidebarOpen}
-                        setSidebarOpen={setSidebarOpen}
-                        backendNotifications={backendNotifications}
-                        setBackendNotifications={setBackendNotifications}
-                        subscriptionNotifications={subscriptionNotifications}
-                        setSubscriptionNotifications={setSubscriptionNotifications}
-                        isNotificationDrawerOpen={isNotificationDrawerOpen}
-                        onCloseNotificationDrawer={onCloseNotificationDrawer}
-                        userProfile={userProfile}
-                    />
-                }
-                sidebar={
-                    <AppSidebar
-                        isSidebarOpen={isSidebarOpen}
-                        setSidebarOpen={setSidebarOpen}
-                    />
-                }
-                notificationDrawer={
-                    isNotificationDrawerOpen && (
-                    <AppNotificationDrawer
-                        onCloseNotificationDrawer={onCloseNotificationDrawer}
-                        isNotificationDrawerOpen={isNotificationDrawerOpen}
-                        backendNotificationGroupExpanded={backendNotificationGroupExpanded}
-                        setBackendNotificationGroupExpanded={setBackendNotificationGroupExpanded}
-                        backendNotifications={backendNotifications}
-                        setBackendNotifications={setBackendNotifications}
-                        setSubscriptionNotificationGroupExpanded={setSubscriptionNotificationGroupExpanded}
-                        subscriptionNotificationGroupExpanded={subscriptionNotificationGroupExpanded}
-                        subscriptionNotifications={subscriptionNotifications}
-                        setSubscriptionNotifications={setSubscriptionNotifications}
-                    />)
-                }
-                isNotificationDrawerExpanded={isNotificationDrawerOpen}
-            >
-                {children}
-            </Page>
+                        }
+                        isNotificationDrawerExpanded={isNotificationDrawerOpen}
+                    >
+                        {children}
+                    </Page>
+                </MyDevicesProvider>
             </AuthProvider>
             </body>
             </html>

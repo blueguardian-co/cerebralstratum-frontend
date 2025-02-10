@@ -5,16 +5,16 @@ import {
     PageSection
 } from '@patternfly/react-core';
 import dynamic from 'next/dynamic';
-import { useAuth } from "./components/AuthProvider";
-import { MapProvider, useMap } from './components/MapProvider';
+import { useAuth } from './providers/AuthProvider';
+import { MapProvider, useMap } from './providers/MapProvider';
+import { useMyDevices } from './providers/MyDevices';
+import SSEClient from './components/SSEClient'
 
 const Map = dynamic(() => import('./components/Map'), { ssr: false });
 /* TODO:
- 1. Add Dark Mode
- 2. Change z-index of `Map` in `Page`
+ 1. Have `Map` container take up full screen, with UI overlayed on top
 
  Misc:
- - Create CEREBRAL STRATUM logo
  - Create BlueGuardian Co logo
  - Creat animation that goes from `full globe` to specific area
 */
@@ -60,14 +60,25 @@ export default function Home() {
             </>
         );
     }
+    if (isAuthenticated) {
+        const { devices, isLoading, error, fetchDevices } = useMyDevices();
+        if (devices.length > 0 && !isLoading && !error) {
+            devices.forEach(device => {
+                SSEClient(
+                    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/${device.uuid}`,
+                    ["locations", "status"]
+                );
+            })
+        }
 
-    return (
-        <>
-            <PageSection isFilled={true}>
-                <MapProvider latitude={-35.44665} longitude={149.09108} zoom={16}>
-                    <Map />
-                </MapProvider>
-            </PageSection>
-        </>
-    );
+        return (
+            <>
+                <PageSection isFilled={true}>
+                    <MapProvider latitude={-35.44665} longitude={149.09108} zoom={16}>
+                        <Map/>
+                    </MapProvider>
+                </PageSection>
+            </>
+        );
+    }
 }

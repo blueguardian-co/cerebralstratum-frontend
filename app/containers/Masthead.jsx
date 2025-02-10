@@ -1,9 +1,10 @@
 'use client'
 
-import { useAuth } from "../components/AuthProvider";
+import { useAuth } from "../providers/AuthProvider";
 import AppNotificationDrawer from "./NotificationDrawer";
 import BackendNotificationService from "../services/BackendNotifications";
 import SubscriptionNotificationService from "../services/SubscriptionNotifications";
+import DeviceFilter from "./DeviceFilter";
 import React, { useState, useContext, useEffect } from 'react';
 import {
     Toolbar,
@@ -12,7 +13,6 @@ import {
     ToolbarContent,
     ToggleGroup,
     ToggleGroupItem,
-    SearchInput,
     Page,
     PageSidebar,
     PageSidebarBody,
@@ -47,8 +47,8 @@ import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
 import BellIcon from '@patternfly/react-icons/dist/esm/icons/bell-icon';
 import MoonIcon from '@patternfly/react-icons/dist/esm/icons/moon-icon';
 import SunIcon from '@patternfly/react-icons/dist/esm/icons/sun-icon';
+import MicrochipIcon from '@patternfly/react-icons/dist/esm/icons/microchip-icon';
 
-import { MicrochipIcon } from '@patternfly/react-icons/dist/esm/icons/microchip-icon';
 import Image from 'next/image';
 
 /* TODO:
@@ -140,7 +140,7 @@ export default function AppMasthead(
                 await BackendUserProfile
             };
         });
-        
+
         const [avatarUrl, setAvatarUrl] = useState( "https://www.gravatar.com/avatar/?s=50&d=identicon");
 
         const getGravatarUrl = async (email) => {
@@ -212,7 +212,7 @@ export default function AppMasthead(
                                         </Dropdown>
                                     </ToolbarItem>
                                     <ToolbarItem>
-                                        <SearchInput placeholder="Filter displayed devices"/>
+                                        <DeviceFilter />
                                     </ToolbarItem>
                                 </ToolbarContent>
                             </ToolbarGroup>
@@ -264,6 +264,7 @@ export default function AppMasthead(
                                                     src={avatarUrl}
                                                     alt={`${user?.preferred_username}'s avatar`}
                                                     className={"pf-v6-c-avatar pf-m-sm"}
+                                                    style={{verticalAlign: "bottom"}}
                                                     isBordered
                                                 />}
                                             >
@@ -272,17 +273,22 @@ export default function AppMasthead(
                                         )}
                                         shouldFocusToggleOnSelect
                                     >
-                                        <DropdownItem>
-                                            <Content
-                                                component={ContentVariants.a}
-                                                href={`${process.env.NEXT_PUBLIC_KEYCLOAK_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/account/#/`}
-                                                target="_blank"
-                                                noreferrer="true"
-                                                noopen="true"
-                                                alt={"Access and manage your account. This is an external link."}
-                                            >
-                                                Account
-                                            </Content>
+                                        <DropdownItem
+                                            // Ensure Patternfly styling is inherited
+                                            component={(props) =>
+                                                <Content
+                                                    {...props}
+                                                    component={ContentVariants.a}
+                                                    href={`${process.env.NEXT_PUBLIC_KEYCLOAK_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/account/#/`}
+                                                    target="_blank"
+                                                    noreferrer="true"
+                                                    noopen="true"
+                                                    alt={"Access and manage your account. This is an external link."}
+                                                >
+                                                    Account
+                                                </Content>
+                                            }
+                                        >
                                         </DropdownItem>
                                         <DropdownItem isDisabled={true} ouiaId="ManageSubscriptionButton">
                                             Manage Subscription
