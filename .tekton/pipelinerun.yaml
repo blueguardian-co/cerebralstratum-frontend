@@ -63,7 +63,6 @@ spec:
             value: "--storage-driver=overlay"
       - name: git-clone-argocd-repo
         taskRef:
-          kind: ClusterTask
           name: git-clone
         params:
           - name: url
