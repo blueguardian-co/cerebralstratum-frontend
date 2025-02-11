@@ -7,7 +7,8 @@ WORKDIR /opt/app-root/src
 
 COPY --chown=1001:0 package.json package-lock.json ./
 
-RUN npm install --frozen-lockfile
+# We have to use --force, as Patternfly doesn't support react 19 yet.
+RUN npm install --frozen-lockfile --force
 
 COPY . .
 
