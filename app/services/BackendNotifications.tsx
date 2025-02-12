@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import apiClient, { configureHeaders } from "../components/ApiClient";
 import { useAuth } from "../providers/AuthProvider";
 
@@ -11,7 +11,15 @@ type BackendNotification = {
     read: boolean,
 }
 
-export default function BackendNotificationService({backendNotifications, setBackendNotifications }) {
+type BackendNotificationServiceProps = {
+    backendNotifications: BackendNotification[];
+    setBackendNotifications: React.Dispatch<React.SetStateAction<BackendNotification[]>>;
+};
+
+
+export default function BackendNotificationService(
+    {backendNotifications, setBackendNotifications}: BackendNotificationServiceProps
+): null {
     const { token } = useAuth();
 
     useEffect(() => {
@@ -76,6 +84,6 @@ export default function BackendNotificationService({backendNotifications, setBac
             }
         };
         fetchBackendNotifications();
-    }, [token, setBackendNotifications]);
+    }, [token, backendNotifications, setBackendNotifications]);
     return null;
 };

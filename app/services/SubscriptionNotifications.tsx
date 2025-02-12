@@ -1,6 +1,23 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
-export default function SubscriptionNotificationService({ subscriptionNotifications, setSubscriptionNotifications, userProfile }) {
+type SubscriptionNotification = {
+    id: number,
+    title: string,
+    description: string,
+    severity: 'success' | 'warning' | 'info',
+    timestamp: string,
+    read: boolean,
+}
+
+type SubscriptionNotificationServiceProps = {
+    subscriptionNotifications: SubscriptionNotification[];
+    setSubscriptionNotifications: React.Dispatch<React.SetStateAction<SubscriptionNotification>>;
+    userProfile: any;
+};
+
+export default function SubscriptionNotificationService(
+    { subscriptionNotifications, setSubscriptionNotifications, userProfile }: SubscriptionNotificationServiceProps
+) {
 
     useEffect(() => {
         const fetchSubscriptionNotifications = async () => {
@@ -36,6 +53,6 @@ export default function SubscriptionNotificationService({ subscriptionNotificati
                 }
         };
         fetchSubscriptionNotifications();
-    }, [setSubscriptionNotifications]);
+    }, [subscriptionNotifications, setSubscriptionNotifications, userProfile]);
     return null;
 };

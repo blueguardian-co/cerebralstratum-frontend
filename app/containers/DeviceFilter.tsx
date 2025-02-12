@@ -36,7 +36,7 @@ type DeviceSelectOption = SelectOptionProps & {
 };
 
 export default function DeviceFilter() {
-    const { isAuthenticated, user } = useAuth();
+    const { user } = useAuth();
 
     // Instantiate and initialise states
     const initialSelectOptions: DeviceSelectOption[] = [
@@ -54,14 +54,14 @@ export default function DeviceFilter() {
     const [selectOptions, setSelectOptions] = useState<DeviceSelectOption[]>(initialSelectOptions);
     const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null);
     const [activeItemId, setActiveItemId] = useState<string | null>(null);
-    const [placeholder, setPlaceholder] = useState('Filter displayed devices');
+    const [placeholder] = useState('Filter displayed devices');
     const textInputRef = useRef<HTMLInputElement>(null)
 
     // Initialise default variables
     const NO_RESULTS = 'No devices found';
 
     // Device details
-    const { devices, isLoading, error, fetchDevices } = useMyDevices();
+    const { devices, isLoading, error } = useMyDevices();
 
     useEffect(() => {
         if (isLoading) {
@@ -130,9 +130,9 @@ export default function DeviceFilter() {
         }
 
         setSelectOptions(newSelectOptions);
-    }, [inputValue, devices, isLoading]);
+    }, [devices, error, isLoading, initialSelectOptions, inputValue, isOpen]);
 
-    const createItemId = (value: any) => `select-multi-typeahead-${value.replace(' ', '-')}`;
+    const createItemId = (value: string | number) => `select-multi-typeahead-${value.toString().replace(' ', '-')}`;
 
     const setActiveAndFocusedItem = (itemIndex: number) => {
         setFocusedItemIndex(itemIndex);
@@ -240,9 +240,6 @@ export default function DeviceFilter() {
 
     const onSelect = (value: string) => {
         if (value && value !== NO_RESULTS) {
-            // eslint-disable-next-line no-console
-            console.log('selected', value);
-
             setSelected(
                 selected.includes(value) ? selected.filter((selection) => selection !== value) : [...selected, value]
             );
@@ -306,10 +303,10 @@ export default function DeviceFilter() {
                     !isOpen && closeMenu();
                 }}
                 toggle={toggle}
-                variant="typeahead"
+                variant={"typeahead"}
             >
                 <SelectGroup label="My Devices">
-                    <SelectList isAriaMultiselectable id="select-my-device-filter-listbox">
+                    <SelectList isAriaMultiselectable id="select-my-device-filter-list-box">
                         {selectOptions
                             .filter(option => option.organisationId === null)
                             .map((option, index) => (
@@ -340,7 +337,7 @@ export default function DeviceFilter() {
                     <React.Fragment key={organisation}>
                         <Divider />
                         <SelectGroup label={`${organisation}'s Devices`}>
-                            <SelectList isAriaMultiselectable id={`select-org-${organisation}-devices-listbox`}>
+                            <SelectList isAriaMultiselectable id={`select-org-${organisation}-devices-list-box`}>
                                 {selectOptions
                                     .filter(option => option.organisationId === organisation)
                                     .map((option, index) => (

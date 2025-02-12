@@ -1,5 +1,5 @@
 import React, { useEffect, useState, createContext, useContext, ReactNode } from "react";
-// @ts-ignore
+// @ts-expect-error
 import Keycloak, { KeycloakConfig, KeycloakInstance } from "keycloak-js";
 import { jwtDecode } from "jwt-decode";
 
@@ -61,7 +61,6 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const decodeToken = (token: string) => {
         try {
-            // @ts-ignore
             const decoded: KeycloakTokenPayload = jwtDecode(token);
             setUser(decoded);
         } catch (error) {
@@ -166,7 +165,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }, 30000);
 
         return () => clearInterval(refreshInterval); // Cleanup on component unmount
-    }, []);
+    });
 
     if (!isAuthInitialized) {
         return <div>Keycloak Initialising...</div>; // Show a loading state while initializing

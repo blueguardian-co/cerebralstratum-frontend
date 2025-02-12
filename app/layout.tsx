@@ -15,10 +15,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const [isDarkThemeEnabled, setDarkThemeEnabled] = useState(false);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = React.useState(false);
-    const onCloseNotificationDrawer = (event: any) => {setIsNotificationDrawerOpen((prevState) => !prevState);};
+    const onCloseNotificationDrawer = () => {setIsNotificationDrawerOpen((prevState) => !prevState);};
     const [backendNotificationGroupExpanded, setBackendNotificationGroupExpanded] = React.useState(false);
     const [subscriptionNotificationGroupExpanded, setSubscriptionNotificationGroupExpanded] = React.useState(false);
-    const [userProfile, setUserProfile] = React.useState(null);
+    const [userProfile] = React.useState(null);
 
     /*
     * Handle Dark Theme
@@ -41,10 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     useEffect(() => {
         const userSetPreference: string | null = getUserSetPreference();
         if (userSetPreference !== null) {
-            setDarkThemeEnabled(userSetPreference === "dark" ? true : false);
+            setDarkThemeEnabled(userSetPreference === "dark");
         } else {
             const mediaQueryPreference = getMediaQueryPreference();
-            setDarkThemeEnabled(mediaQueryPreference === "dark" ? true : false );
+            setDarkThemeEnabled(mediaQueryPreference === "dark");
         }
     }, []);
     
@@ -124,7 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
     React.useEffect(() => {
         localStorage.setItem('subscription_notifications', JSON.stringify(subscriptionNotifications));
-    }, [backendNotifications]);
+    }, [subscriptionNotifications]);
     
     return (
         isDarkThemeEnabled ?

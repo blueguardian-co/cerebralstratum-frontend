@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const SSEClient = <T = any>(url: string, events: string[], options?: EventSourceInit) => {
+const SSEClient = <T = unknown>(url: string, events: string[], options?: EventSourceInit) => {
     const [error, setError] = useState<Error | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [eventData, setEventData] = useState<Record<string, T | null>>({});
@@ -13,7 +13,7 @@ const SSEClient = <T = any>(url: string, events: string[], options?: EventSource
 
             if (eventSource !== null && events.length > 0) {
                 events.forEach((named_event) => {
-                    // @ts-ignore
+                    // @ts-expect-error
                     eventSource.addEventListener(named_event, (event) => {
                         const data: T = JSON.parse(event.data);
                         setEventData((prev) => ({

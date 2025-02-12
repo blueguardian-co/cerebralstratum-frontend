@@ -55,7 +55,7 @@ const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     useEffect(() => {
         // Fetch devices on initial mount
         fetchDevices();
-    }, [token]);
+    });
 
     return (
         <DevicesContext.Provider
