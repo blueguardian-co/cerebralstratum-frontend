@@ -59,72 +59,59 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     }, [isDarkThemeEnabled]);
 
     /* Backend Notification Management */
+    const defaultBackendNotification = {
+        id: -1,
+        title: 'Initialising...',
+        description: 'Fetching backend status...',
+        severity: 'info',
+        timestamp: new Date(),
+        read: false,
+    };
+
     const [backendNotifications, setBackendNotifications] = React.useState(() => {
-        if (typeof window !== 'undefined') {
-            const savedBackendNotifications = localStorage.getItem('backend_notifications');
-            return savedBackendNotifications
-                ? JSON.parse(savedBackendNotifications)
-                : [
-                    {
-                        id: -1,
-                        title: 'Initializing...',
-                        description: 'Fetching backend status...',
-                        severity: 'info',
-                        timestamp: new Date().toISOString(),
-                        read: false,
-                    }
-                ];
-        } else {
-            return [
-                {
-                    id: -1,
-                    title: 'Initializing...',
-                    description: 'Fetching backend status...',
-                    severity: 'info',
-                    timestamp: new Date().toISOString(),
-                    read: false,
-                }
-            ];
+        if (typeof window === 'undefined') return defaultBackendNotification;
+
+        try {
+            const saved = localStorage.getItem('backend_notifications');
+            return saved ? JSON.parse(saved) : defaultBackendNotification;
+        } catch {
+            return defaultBackendNotification;
         }
     });
-
-    React.useEffect(() => {
-        localStorage.setItem('backend_notifications', JSON.stringify(backendNotifications));
-    }, [backendNotifications]);
 
     /* Subscription Notification Management */
+    const defaultSubscriptionNotification = {
+        id: -1,
+        title: 'Initialiding...',
+        description: 'Fetching subscription status...',
+        severity: 'info',
+        timestamp: new Date(),
+        read: false,
+    };
+
     const [subscriptionNotifications, setSubscriptionNotifications] = React.useState(() => {
-        if (typeof window !== 'undefined') {
-            const savedSubscriptionNotifications = localStorage.getItem('subscription_notifications');
-            return savedSubscriptionNotifications
-                ? JSON.parse(savedSubscriptionNotifications)
-                : [
-                    {
-                        id: -1,
-                        title: 'Initializing...',
-                        description: 'Fetching subscription status...',
-                        severity: 'info',
-                        timestamp: new Date().toISOString(),
-                        read: false,
-                    }
-                ];
-        } else {
-            return [
-                {
-                    id: -1,
-                    title: 'Initializing...',
-                    description: 'Fetching subscription status...',
-                    severity: 'info',
-                    timestamp: new Date().toISOString(),
-                    read: false,
-                }
-            ];
+        if (typeof window === 'undefined') return defaultSubscriptionNotification;
+
+        try {
+            const saved = localStorage.getItem('subscription_notifications');
+            return saved ? JSON.parse(saved) : defaultSubscriptionNotification;
+        } catch {
+            return defaultSubscriptionNotification;
         }
     });
 
+
     React.useEffect(() => {
-        localStorage.setItem('subscription_notifications', JSON.stringify(subscriptionNotifications));
-    }, [subscriptionNotifications]);
+        if (typeof window === 'undefined') return;
+
+        try {
+            localStorage.setItem('backend_notifications', JSON.stringify(backendNotifications));
+            localStorage.setItem('subscription_notifications', JSON.stringify(subscriptionNotifications));
+        } catch (error) {
+            console.error('Error saving notifications to localStorage:', error);
+        }
+    }, [backendNotifications, subscriptionNotifications]);
+
     
     return (
         isDarkThemeEnabled ?

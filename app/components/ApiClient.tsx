@@ -2,7 +2,7 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 const apiClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:6443/api/v1/",
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:6443",
 });
 
 export const configureHeaders = (token: string | null) => {

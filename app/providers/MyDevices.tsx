@@ -7,6 +7,7 @@ export interface Status {
     overall: string;
     battery: number;
 }
+
 export type Device = {
     uuid: string;
     name: string | null;
@@ -36,9 +37,10 @@ const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     const fetchDevices = async () => {
         setIsLoading(true);
         setError(null);
+
         try {
             configureHeaders(token);
-            const response = await apiClient.get("/devices/mine");
+            const response = await apiClient.get("/api/v1/devices/mine");
             if (response.status === 200) {
                 setDevices(response.data);
             } else {
@@ -53,9 +55,8 @@ const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     };
 
     useEffect(() => {
-        // Fetch devices on initial mount
         fetchDevices();
-    });
+    }, [token]);
 
     return (
         <DevicesContext.Provider
@@ -69,7 +70,7 @@ const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 export const useMyDevices = (): DevicesContextType => {
     const context = useContext(DevicesContext);
     if (!context) {
-        throw new Error("useMyDevices context, must be used within a MyDevicesProvider component.");
+        throw new Error("useMyDevices context must be used within a MyDevicesProvider component.");
     }
     return context;
 };

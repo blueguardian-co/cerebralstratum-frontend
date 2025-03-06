@@ -36,11 +36,9 @@ export default function AppNotificationDrawer(
 
     const toggleBackendNotificationReadState = (id) => {
         setBackendNotifications((prevNotifications) =>
-            prevNotifications.map((notification) =>
-                notification.id === id
-                    ? { ...notification, read: !notification.read }
-                    : notification
-            )
+            prevNotifications.id === id
+                ? { ...prevNotifications, read: !prevNotifications.read }
+                : prevNotifications
         );
     };
 
@@ -51,11 +49,9 @@ export default function AppNotificationDrawer(
 
     const toggleSubscriptionNotificationReadState = (id) => {
         setSubscriptionNotifications((prevNotifications) =>
-            prevNotifications.map((notification) =>
-                notification.id === id
-                    ? { ...notification, read: !notification.read }
-                    : notification
-            )
+            prevNotifications.id === id
+                ? { ...prevNotifications, read: !prevNotifications.read }
+                : prevNotifications
         );
     };
 
@@ -69,33 +65,30 @@ export default function AppNotificationDrawer(
                         isExpanded={backendNotificationGroupExpanded}
                         onExpand={toggleBackendDrawer}
                         title={"Backend Notifications"}
-                        count={backendNotifications.filter(notification => !notification.read).length}
+                        count={backendNotifications.read ? 0 : 1}
                     >
                         <NotificationDrawerList
                             isHidden={!backendNotificationGroupExpanded}
                             aria-label="Backend Notifications"
                         >
-                            {backendNotifications.length > 0 ? (
-                                backendNotifications.map((notification) => (
-                                        <NotificationDrawerListItem
-                                            variant={notification.severity}
-                                            isRead={notification.read}
-                                            onClick={() => toggleBackendNotificationReadState(notification.id)}
-                                            key={notification.id}
-                                            tabIndex={notification.id}
-                                        >
-                                            <NotificationDrawerListItemHeader
-                                                title={notification.title}
-                                                variant={notification.severity}
-                                            />
-                                            <NotificationDrawerListItemBody
-                                                timestamp={notification.timestamp}
-                                            >
-                                                {notification.description}
-                                            </NotificationDrawerListItemBody>
-                                        </NotificationDrawerListItem>
-                                    )
-                                )
+                            {backendNotifications ? (
+                                <NotificationDrawerListItem
+                                    variant={backendNotifications.severity}
+                                    isRead={backendNotifications.read}
+                                    onClick={() => toggleBackendNotificationReadState(backendNotifications.id)}
+                                    key={backendNotifications.id}
+                                    tabIndex={backendNotifications.id}
+                                >
+                                    <NotificationDrawerListItemHeader
+                                        title={backendNotifications.title}
+                                        variant={backendNotifications.severity}
+                                    />
+                                    <NotificationDrawerListItemBody
+                                        timestamp={backendNotifications.timestamp}
+                                    >
+                                        {backendNotifications.description}
+                                    </NotificationDrawerListItemBody>
+                                </NotificationDrawerListItem>
                             ) : (
                                 <NotificationDrawerListItem
                                     variant="success"
@@ -117,33 +110,30 @@ export default function AppNotificationDrawer(
                         isExpanded={subscriptionNotificationGroupExpanded}
                         onExpand={toggleSubscriptionDrawer}
                         title={"Subscription Notifications"}
-                        count={subscriptionNotifications.filter(notification => !notification.read).length}
+                        count={subscriptionNotifications.read ? 0 : 1}
                     >
                         <NotificationDrawerList
                             isHidden={!subscriptionNotificationGroupExpanded}
                             aria-label="Subscription Notifications"
                         >
-                            {subscriptionNotifications.length > 0 ? (
-                                subscriptionNotifications.map((notification) => (
-                                        <NotificationDrawerListItem
-                                            variant={notification.severity}
-                                            isRead={notification.read}
-                                            onClick={() => toggleSubscriptionNotificationReadState(notification.id)}
-                                            key={notification.id}
-                                            tabIndex={notification.id}
-                                        >
-                                            <NotificationDrawerListItemHeader
-                                                title={notification.title}
-                                                variant={notification.severity}
-                                            />
-                                            <NotificationDrawerListItemBody
-                                                timestamp={notification.timestamp}
-                                            >
-                                                {notification.description}
-                                            </NotificationDrawerListItemBody>
-                                        </NotificationDrawerListItem>
-                                    )
-                                )
+                            {subscriptionNotifications ? (
+                                <NotificationDrawerListItem
+                                    variant={subscriptionNotifications.severity}
+                                    isRead={subscriptionNotifications.read}
+                                    onClick={() => toggleSubscriptionNotificationReadState(subscriptionNotifications.id)}
+                                    key={subscriptionNotifications.id}
+                                    tabIndex={subscriptionNotifications.id}
+                                >
+                                    <NotificationDrawerListItemHeader
+                                        title={subscriptionNotifications.title}
+                                        variant={subscriptionNotifications.severity}
+                                    />
+                                    <NotificationDrawerListItemBody
+                                        timestamp={subscriptionNotifications.timestamp}
+                                    >
+                                        {subscriptionNotifications.description}
+                                    </NotificationDrawerListItemBody>
+                                </NotificationDrawerListItem>
                             ) : (
                                 <NotificationDrawerListItem
                                     variant="success"

@@ -32,11 +32,11 @@ type DeviceSelectOption = SelectOptionProps & {
     uuid?: string;
     organisationId?: string | null;
     imageUrl?: string | null;
-    name?: string | null;
+    friendlyName?: string | null;
 };
 
 export default function DeviceFilter() {
-    const { user } = useAuth();
+    const { user, backendUserProfile } = useAuth();
 
     // Instantiate and initialise states
     const initialSelectOptions: DeviceSelectOption[] = [
@@ -130,7 +130,7 @@ export default function DeviceFilter() {
         }
 
         setSelectOptions(newSelectOptions);
-    }, [devices, error, isLoading, initialSelectOptions, inputValue, isOpen]);
+    }, [devices, isLoading]);
 
     const createItemId = (value: string | number) => `select-multi-typeahead-${value.toString().replace(' ', '-')}`;
 
@@ -317,11 +317,10 @@ export default function DeviceFilter() {
                                     isFocused={focusedItemIndex === index}
                                     className={option.className}
                                     id={createItemId(option.value)}
-                                    {...option}
                                     ref={null}
                                     icon={option.imageUrl ? <Avatar
                                         src={option.imageUrl}
-                                        alt={`${option.uuid}'s avatar`}
+                                        alt={`${option.children}'s avatar`}
                                         className={"pf-v6-c-avatar pf-m-sm"}
                                         style={{verticalAlign: "bottom"}}
                                         isBordered
@@ -329,17 +328,20 @@ export default function DeviceFilter() {
                                             <MicrochipIcon />
                                         </Icon>
                                     }
-                                />
+                                >
+                                    {option.children}
+                                </SelectOption>
                             ))}
                     </SelectList>
                 </SelectGroup>
-                {user?.organisations && user.organisations.map((organisation) => (
-                    <React.Fragment key={organisation}>
+                {/** TODO fix this mapping. Use Keycloak/OIDC token scopes to filter organisations, rather than the backendUserProfile **/}
+                {backendUserProfile?.keycloak_org_id ?
+                    <React.Fragment key={backendUserProfile.keycloak_org_id}>
                         <Divider />
-                        <SelectGroup label={`${organisation}'s Devices`}>
-                            <SelectList isAriaMultiselectable id={`select-org-${organisation}-devices-list-box`}>
+                        <SelectGroup label={`${backendUserProfile.keycloak_org_id}'s Devices`}>
+                            <SelectList isAriaMultiselectable id={`select-org-${backendUserProfile.keycloak_org_id}-devices-list-box`}>
                                 {selectOptions
-                                    .filter(option => option.organisationId === organisation)
+                                    .filter(option => option.organisationId === backendUserProfile.keycloak_org_id)
                                     .map((option, index) => (
                                         <SelectOption
                                             {...(!option.isDisabled && !option.isAriaDisabled && { hasCheckbox: true })}
@@ -348,11 +350,10 @@ export default function DeviceFilter() {
                                             isFocused={focusedItemIndex === index}
                                             className={option.className}
                                             id={createItemId(option.value)}
-                                            {...option}
                                             ref={null}
                                             icon={option.imageUrl ? <Avatar
                                                 src={option.imageUrl}
-                                                alt={`${option.uuid}'s avatar`}
+                                                alt={`${option.children}'s avatar`}
                                                 className={"pf-v6-c-avatar pf-m-sm"}
                                                 style={{verticalAlign: "bottom"}}
                                                 isBordered
@@ -360,12 +361,14 @@ export default function DeviceFilter() {
                                                         <MicrochipIcon />
                                                     </Icon>
                                             }
-                                        />
+                                        >
+                                            {option.children}
+                                        </SelectOption>
                                     ))}
                             </SelectList>
                         </SelectGroup>
                     </React.Fragment>
-                ))}
+                : null}
 
             </Select>
         </>

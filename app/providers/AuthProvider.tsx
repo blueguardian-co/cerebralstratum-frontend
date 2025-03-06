@@ -71,7 +71,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const fetchBackendUserProfile = async (token: string, userId: string) => {
         try {
             configureHeaders(token);
-            const response = await apiClient.get(`/authorisation/users/${userId}`);
+            const response = await apiClient.get(`/api/v1/authorisation/users/me`);
             if (response.status === 200) {
                 setBackendUserProfile(response.data);
             } else {
@@ -165,7 +165,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }, 30000);
 
         return () => clearInterval(refreshInterval); // Cleanup on component unmount
-    });
+    },[]);
+    // Requires empty dependency array, to avoid trying to init continously
 
     if (!isAuthInitialized) {
         return <div>Keycloak Initialising...</div>; // Show a loading state while initializing

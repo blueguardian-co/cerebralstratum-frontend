@@ -56,16 +56,16 @@ import Image from 'next/image';
 */
 
 function countUnreadNotifications(backendNotifications, subscriptionNotifications) {
-    const backendUnreadCount = backendNotifications.filter(notification => !notification.read).length;
-    const subscriptionUnreadCount = subscriptionNotifications.filter(notification => !notification.read).length;
+    const backendUnreadCount = backendNotifications.read ? 0 : 1;
+    const subscriptionUnreadCount = subscriptionNotifications.read ? 0 : 1;
     return backendUnreadCount + subscriptionUnreadCount;
 }
 
-function isSubscriptionEntitlementExhausted(userProfile) {
-    if (userProfile === null ) {
+function isSubscriptionEntitlementExhausted(backendUserProfile) {
+    if (backendUserProfile === null ) {
         return true;
     }
-    if (userProfile.subscription_entitlement >= userProfile.subscription_used){
+    if (backendUserProfile.subscription_entitlement >= backendUserProfile.subscription_used){
         return false;
     }
     return true;
@@ -86,7 +86,7 @@ export default function AppMasthead(
         userProfile,
     }
 ) {
-    const { isAuthenticated, user, login, logout } = useAuth();
+    const { isAuthenticated, user, login, logout,backendUserProfile } = useAuth();
     const [isAccountOpen, setIsAccountOpen] = React.useState(false);
     const [isDeviceOpen, setIsDeviceOpen] = React.useState(false);
 
@@ -309,7 +309,7 @@ export default function AppMasthead(
                 <SubscriptionNotificationService
                     subscriptionNotifications={subscriptionNotifications}
                     setSubscriptionNotifications={setSubscriptionNotifications}
-                    userProfile={userProfile}
+                    backendUserProfile={backendUserProfile}
                 />
             </Masthead>
         );

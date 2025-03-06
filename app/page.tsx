@@ -94,7 +94,7 @@ export default function Home() {
         if (devices.length > 0 && !isLoading && !error) {
             devices.forEach(device => {
                 SSEClient<EventData>(
-                    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/${device.uuid}`,
+                    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/v1/devices/by-id/${device.uuid}`,
                     ["location", "status", "canbus"]
                 );
             })

@@ -10,49 +10,75 @@ type SubscriptionNotification = {
 }
 
 type SubscriptionNotificationServiceProps = {
-    subscriptionNotifications: SubscriptionNotification[];
+    subscriptionNotifications: SubscriptionNotification;
     setSubscriptionNotifications: React.Dispatch<React.SetStateAction<SubscriptionNotification>>;
-    userProfile: any;
+    backendUserProfile: any;
 };
 
 export default function SubscriptionNotificationService(
-    { subscriptionNotifications, setSubscriptionNotifications, userProfile }: SubscriptionNotificationServiceProps
+    { subscriptionNotifications, setSubscriptionNotifications, backendUserProfile }: SubscriptionNotificationServiceProps
 ) {
-
     useEffect(() => {
+        let mounted = true;
+
         const fetchSubscriptionNotifications = async () => {
-                if (subscriptionNotifications[0].title === 'Initializing...') {
-                    return;
-                }
-                if ((subscriptionNotifications[0].title === 'Subscription fully utilised' || subscriptionNotifications[0].title === 'Subscription utilisation') && subscriptionNotifications[0].read === true) {
-                    return;
-                }
-                if (userProfile.subscription_entitlement === userProfile.subscription_used) {
-                    setSubscriptionNotifications(
-                        {
-                            id: 0,
-                            title: "Subscription fully utilised",
-                            description: "You have used your full subscription entitlement (" + userProfile.subscription_used + " of " + userProfile.subscription_entitlement + ").",
-                            severity: 'warning',
-                            timestamp: new Date().toISOString(),
-                            read: false,
-                        }
-                    )
-                }
-                if (userProfile.subscription_entitlement >= userProfile.subscription_used) {
+            if (!mounted || backendUserProfile === null) return;
+
+            try {
+                if (backendUserProfile.subscription_entitlement <= backendUserProfile.subscription_used) {
                     setSubscriptionNotifications(
                         {
                             id: 0,
                             title: "Subscription utilisation",
-                            description: "You have used (" + userProfile.subscription_used + "/" + userProfile.subscription_entitlement + ") of you subscription entitlement.",
-                            severity: 'info',
-                            timestamp: new Date().toISOString(),
-                            read: false,
+                            description: "You have used (" + backendUserProfile.subscription_used + "/" + backendUserProfile.subscription_entitlement + ") of your subscription entitlement.",
+                            severity: ((backendUserProfile.subscription_used / backendUserProfile.subscription_entitlement) * 100) >= 80 ? 'warning' : 'info',
+                            timestamp: new Date().toDateString(),
+                            read: subscriptionNotifications.read ? true : false,
                         }
                     )
+                    return;
                 }
-        };
+                if (subscriptionNotifications.title === 'Subscription fully utilised') {
+                    if (backendUserProfile.subscription_entitlement >= backendUserProfile.subscription_used) {
+                        setSubscriptionNotifications(
+                            {
+                                id: 0,
+                                title: "Subscription utilisation",
+                                description: "You have used (" + backendUserProfile.subscription_used + "/" + backendUserProfile.subscription_entitlement + ") of your subscription entitlement.",
+                                severity: 'info',
+                                timestamp: new Date().toDateString(),
+                                read: false,
+                            }
+                        )
+                    }
+                    return;
+                }
+                if (subscriptionNotifications.title === 'Subscription utilisation') {
+                    if (backendUserProfile.subscription_entitlement === backendUserProfile.subscription_used) {
+                        setSubscriptionNotifications(
+                            {
+                                id: 0,
+                                title: "Subscription fully utilised",
+                                description: "You have used your full subscription entitlement (" + backendUserProfile.subscription_used + " of " + backendUserProfile.subscription_entitlement + ").",
+                                severity: 'warning',
+                                timestamp: new Date().toDateString(),
+                                read: false,
+                            }
+                        )
+                    }
+                    return;
+                }
+            } catch (error) {
+                if (!mounted) return;
+                console.error('Error fetching subscription notifications:', error);
+                return;
+            }
+        }
         fetchSubscriptionNotifications();
-    }, [subscriptionNotifications, setSubscriptionNotifications, userProfile]);
+
+        return () => {
+            mounted = false;
+        };
+    }, [backendUserProfile]);
     return null;
-};
+    };
