@@ -1,6 +1,8 @@
 import React, { useEffect, useState, createContext, useContext, ReactNode } from "react";
 // @ts-expect-error
 import Keycloak, { KeycloakConfig, KeycloakInstance } from "keycloak-js";
+import type OrganizationRepresentation from '@keycloak/keycloak-admin-client/lib/defs/organizationRepresentation';
+
 import { jwtDecode } from "jwt-decode";
 
 import apiClient, { configureHeaders } from "../components/ApiClient";
@@ -30,6 +32,7 @@ type AuthContextValue = {
     token: string | null;
     user: KeycloakTokenPayload | null;
     backendUserProfile: BackendUserProfile | null;
+    userOrganisations: OrganizationRepresentation[] | null;
     keycloak: KeycloakInstance;
     login: () => void;
     logout: () => void;
@@ -58,6 +61,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<KeycloakTokenPayload | null>(null);
     const [isAuthInitialized, setIsAuthInitialized] = useState(false);
     const [backendUserProfile, setBackendUserProfile] = useState<BackendUserProfile | null>(null);
+    const [userOrganisations, setUserOrganisations] = useState<OrganizationRepresentation[] | null>(null);
 
     const decodeToken = (token: string) => {
         try {
@@ -79,6 +83,20 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
         } catch (error) {
             console.error("Error fetching the user profile:", error);
+        }
+    };
+
+    const fetchUserOrganisations = async (token: string, userId: string) => {
+        try {
+            configureHeaders(token);
+            const response = await apiClient.get(`/api/v1/authorisation/users/by-id/${userId}/organisations`);
+            if (response.status === 200) {
+                setUserOrganisations(response.data);
+            } else {
+                console.warn(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching the user organisations:", error);
         }
     };
 
@@ -149,6 +167,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     useEffect(() => {
         if (user && token) {
             fetchBackendUserProfile(token, user.sub);
+            fetchUserOrganisations(token, user.sub);
         }
     }, [user, token]);
 
@@ -178,6 +197,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             token,
             user,
             backendUserProfile,
+            userOrganisations,
             keycloak,
             login,
             logout,

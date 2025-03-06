@@ -36,7 +36,7 @@ type DeviceSelectOption = SelectOptionProps & {
 };
 
 export default function DeviceFilter() {
-    const { user, backendUserProfile } = useAuth();
+    const { backendUserProfile, userOrganisations } = useAuth();
 
     // Instantiate and initialise states
     const initialSelectOptions: DeviceSelectOption[] = [
@@ -335,13 +335,13 @@ export default function DeviceFilter() {
                     </SelectList>
                 </SelectGroup>
                 {/** TODO fix this mapping. Use Keycloak/OIDC token scopes to filter organisations, rather than the backendUserProfile **/}
-                {backendUserProfile?.keycloak_org_id ?
-                    <React.Fragment key={backendUserProfile.keycloak_org_id}>
+                {userOrganisations?.map((organisation) => (
+                    <React.Fragment key={organisation.id}>
                         <Divider />
-                        <SelectGroup label={`${backendUserProfile.keycloak_org_id}'s Devices`}>
-                            <SelectList isAriaMultiselectable id={`select-org-${backendUserProfile.keycloak_org_id}-devices-list-box`}>
+                        <SelectGroup label={`${organisation.name}'s Devices`}>
+                            <SelectList isAriaMultiselectable id={`select-org-${organisation.name}-devices-list-box`}>
                                 {selectOptions
-                                    .filter(option => option.organisationId === backendUserProfile.keycloak_org_id)
+                                    .filter(option => option.organisationId === organisation.id)
                                     .map((option, index) => (
                                         <SelectOption
                                             {...(!option.isDisabled && !option.isAriaDisabled && { hasCheckbox: true })}
@@ -364,13 +364,16 @@ export default function DeviceFilter() {
                                         >
                                             {option.children}
                                         </SelectOption>
-                                    ))}
+                                        )
+                                    )
+                                }
                             </SelectList>
                         </SelectGroup>
                     </React.Fragment>
-                : null}
-
-            </Select>
+                        )
+                    )
+                }
+              </Select>
         </>
     );
 }

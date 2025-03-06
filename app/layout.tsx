@@ -105,12 +105,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         if (typeof window === 'undefined') return;
 
         try {
+            console.log('Saving backend_notifications to localStorage');
             localStorage.setItem('backend_notifications', JSON.stringify(backendNotifications));
+            console.log('Saving subscription_notifications to localStorage');
             localStorage.setItem('subscription_notifications', JSON.stringify(subscriptionNotifications));
         } catch (error) {
             console.error('Error saving notifications to localStorage:', error);
         }
-    }, [backendNotifications, subscriptionNotifications]);
+    }, [backendNotifications.read, subscriptionNotifications.read]);
 
     
     return (

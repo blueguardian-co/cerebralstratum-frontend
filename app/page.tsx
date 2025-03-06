@@ -47,7 +47,7 @@ const Map = dynamic(() => import('./components/Map'), { ssr: false });
  - Create BlueGuardian Co logo
  - Creat animation that goes from `full globe` to specific area
 */
-function spinGlobe(map: mapboxgl.Map, secondsPerRevolution: number = 360) {
+function spinGlobe(map: mapboxgl.Map, secondsPerRevolution: number = 720) {
     const distancePerSecond = 360 / secondsPerRevolution;
     return () => {
         const center = map.getCenter();
@@ -76,7 +76,7 @@ function MapWithSpinningGlobe() {
 }
 
 export default function Home() {
-    const { isAuthenticated } = useAuth();
+    const { token, isAuthenticated } = useAuth();
     const { devices, isLoading, error } = useMyDevices();
     
     if (!isAuthenticated) {
@@ -95,7 +95,8 @@ export default function Home() {
             devices.forEach(device => {
                 SSEClient<EventData>(
                     `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/v1/devices/by-id/${device.uuid}`,
-                    ["location", "status", "canbus"]
+                    ["location", "status", "canbus"],
+                    token
                 );
             })
         }

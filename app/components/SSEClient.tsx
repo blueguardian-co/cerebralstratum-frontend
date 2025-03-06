@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { useAuth } from "../providers/AuthProvider";
 
-const SSEClient = <T = unknown>(url: string, events: string[], options?: EventSourceInit) => {
+const SSEClient = <T = unknown>(url: string, events: string[], token: string | null, options?: EventSourceInit) => {
     const [error, setError] = useState<Error | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [eventData, setEventData] = useState<Record<string, T | null>>({});
@@ -15,10 +14,12 @@ const SSEClient = <T = unknown>(url: string, events: string[], options?: EventSo
             setError(new Error("URL is required"));
             return null;
         }
+        if (!token) {
+            setError(new Error("Token is required"));
+            return null;
+        }
 
         try {
-            const { token } = useAuth();
-
             const urlWithToken = new URL(url);
             if (token) {
                 urlWithToken.searchParams.append('access_token', token);
