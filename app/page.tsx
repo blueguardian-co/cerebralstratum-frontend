@@ -42,6 +42,7 @@ type EventData = {
 const Map = dynamic(() => import('./components/Map'), { ssr: false });
 /* TODO:
  1. Have `Map` container take up full screen, with UI overlaid on top
+ 2. Access selectedDevices filter from `layout.tsx`, in order to filter what is rendered on the map
 
  Misc:
  - Create BlueGuardian Co logo

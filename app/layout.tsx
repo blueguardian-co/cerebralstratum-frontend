@@ -9,7 +9,7 @@ import AppMasthead from './containers/Masthead';
 import AppSidebar from './containers/Sidebar';
 import AppNotificationDrawer from "./containers/NotificationDrawer";
 import AuthProvider from "./providers/AuthProvider";
-import MyDevicesProvider from "./providers/MyDevices";
+import MyDevicesProvider from './providers/MyDevices';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const [isDarkThemeEnabled, setDarkThemeEnabled] = useState(false);
@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const [backendNotificationGroupExpanded, setBackendNotificationGroupExpanded] = React.useState(false);
     const [subscriptionNotificationGroupExpanded, setSubscriptionNotificationGroupExpanded] = React.useState(false);
     const [userProfile] = React.useState(null);
-
+    const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
     /*
     * Handle Dark Theme
     * Credit: https://sreetamdas.com/blog/the-perfect-dark-mode
@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     };
 
     const [backendNotifications, setBackendNotifications] = React.useState(() => {
-        if (typeof window === 'undefined') return defaultBackendNotification;
+        if (typeof window === 'undefined') return;
 
         try {
             const saved = localStorage.getItem('backend_notifications');
@@ -82,7 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     /* Subscription Notification Management */
     const defaultSubscriptionNotification = {
         id: -1,
-        title: 'Initialiding...',
+        title: 'Initialising...',
         description: 'Fetching subscription status...',
         severity: 'info',
         timestamp: new Date(),
@@ -90,7 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     };
 
     const [subscriptionNotifications, setSubscriptionNotifications] = React.useState(() => {
-        if (typeof window === 'undefined') return defaultSubscriptionNotification;
+        if (typeof window === 'undefined') return;
 
         try {
             const saved = localStorage.getItem('subscription_notifications');
@@ -105,14 +105,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         if (typeof window === 'undefined') return;
 
         try {
-            console.log('Saving backend_notifications to localStorage');
             localStorage.setItem('backend_notifications', JSON.stringify(backendNotifications));
-            console.log('Saving subscription_notifications to localStorage');
             localStorage.setItem('subscription_notifications', JSON.stringify(subscriptionNotifications));
         } catch (error) {
             console.error('Error saving notifications to localStorage:', error);
         }
-    }, [backendNotifications.read, subscriptionNotifications.read]);
+    }, [backendNotifications, subscriptionNotifications]);
 
     
     return (
@@ -135,6 +133,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                 isNotificationDrawerOpen={isNotificationDrawerOpen}
                                 onCloseNotificationDrawer={onCloseNotificationDrawer}
                                 userProfile={userProfile}
+                                selectedDevices={selectedDevices}
+                                setSelectedDevices={setSelectedDevices}
                             />
                         }
                         sidebar={
@@ -185,6 +185,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                 isNotificationDrawerOpen={isNotificationDrawerOpen}
                                 onCloseNotificationDrawer={onCloseNotificationDrawer}
                                 userProfile={userProfile}
+                                selectedDevices={selectedDevices}
+                                setSelectedDevices={setSelectedDevices}
                             />
                         }
                         sidebar={

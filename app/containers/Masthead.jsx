@@ -84,6 +84,8 @@ export default function AppMasthead(
         subscriptionNotifications,
         setSubscriptionNotifications,
         userProfile,
+        selectedDevices,
+        setSelectedDevices,
     }
 ) {
     const { isAuthenticated, user, login, logout,backendUserProfile } = useAuth();
@@ -212,7 +214,7 @@ export default function AppMasthead(
                                         </Dropdown>
                                     </ToolbarItem>
                                     <ToolbarItem>
-                                        <DeviceFilter />
+                                        <DeviceFilter selectedDevices={selectedDevices} setSelectedDevices={setSelectedDevices} />
                                     </ToolbarItem>
                                 </ToolbarContent>
                             </ToolbarGroup>

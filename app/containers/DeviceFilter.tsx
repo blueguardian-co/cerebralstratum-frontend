@@ -29,14 +29,14 @@ import MicrochipIcon from '@patternfly/react-icons/dist/esm/icons/microchip-icon
 type DeviceSelectOption = SelectOptionProps & {
     hasCheckbox?: boolean;
     isAriaDisabled?: boolean;
-    uuid?: string;
+    uuid: string;
     organisationId?: string | null;
     imageUrl?: string | null;
     friendlyName?: string | null;
 };
 
-export default function DeviceFilter() {
-    const { backendUserProfile, userOrganisations } = useAuth();
+export default function DeviceFilter({selectedDevices, setSelectedDevices}) {
+    const { userOrganisations } = useAuth();
 
     // Instantiate and initialise states
     const initialSelectOptions: DeviceSelectOption[] = [
@@ -44,24 +44,24 @@ export default function DeviceFilter() {
             value: 'No devices found',
             children: 'No devices found',
             hasCheckbox: false,
-            isAriaDisabled: true
+            isAriaDisabled: true,
+            uuid: 'N/A'
         }
 
     ];
+    // Initialise default variables
+    const NO_RESULTS = 'No devices found';
+    // Device details
+    const { devices, isLoading, error } = useMyDevices();
+
     const [isOpen, setIsOpen] = useState(false);
     const [inputValue, setInputValue] = useState<string>('');
-    const [selected, setSelected] = useState<string[]>([]);
     const [selectOptions, setSelectOptions] = useState<DeviceSelectOption[]>(initialSelectOptions);
     const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null);
     const [activeItemId, setActiveItemId] = useState<string | null>(null);
     const [placeholder] = useState('Filter displayed devices');
     const textInputRef = useRef<HTMLInputElement>(null)
-
-    // Initialise default variables
-    const NO_RESULTS = 'No devices found';
-
-    // Device details
-    const { devices, isLoading, error } = useMyDevices();
+    const [suggestedItems] = useState<string[]>(devices.map(device => device.name || device.uuid));
 
     useEffect(() => {
         if (isLoading) {
@@ -69,7 +69,8 @@ export default function DeviceFilter() {
                 value: 'loading',
                 children: 'Loading devices...',
                 hasCheckbox: false,
-                isAriaDisabled: true
+                isAriaDisabled: true,
+                uuid: 'N/A'
             }]);
             return;
         }
@@ -79,7 +80,8 @@ export default function DeviceFilter() {
                 value: 'error',
                 children: 'Error loading devices',
                 hasCheckbox: false,
-                isAriaDisabled: true
+                isAriaDisabled: true,
+                uuid: 'N/A'
             }]);
             return;
         }
@@ -89,7 +91,8 @@ export default function DeviceFilter() {
                 value: NO_RESULTS,
                 children: 'No devices found',
                 hasCheckbox: false,
-                isAriaDisabled: true
+                isAriaDisabled: true,
+                uuid: 'N/A'
             }]);
             return;
         }
@@ -97,7 +100,7 @@ export default function DeviceFilter() {
         let newSelectOptions: DeviceSelectOption[] = devices.length ?
             devices.map(device => ({
                 value: device.uuid,
-                children: device.name || device.uuid,
+                children: device.uuid,
                 uuid: device.uuid,
                 organisationId: device.keycloak_org_id || null,
                 imageUrl: device.image_path || null,
@@ -107,9 +110,9 @@ export default function DeviceFilter() {
 
         // Filter menu items based on the text input value when one exists
         if (inputValue) {
-            newSelectOptions = newSelectOptions.filter((menuItem) =>
-                String(menuItem.children).toLowerCase().includes(inputValue.toLowerCase())
-            );
+            newSelectOptions = newSelectOptions.filter((menuItem) => {
+                return String(menuItem.friendlyName || menuItem.uuid).toLowerCase().includes(inputValue.toLowerCase())
+            })
 
             // When no options are found after filtering, display 'No results found'
             if (!newSelectOptions.length) {
@@ -118,7 +121,8 @@ export default function DeviceFilter() {
                         isAriaDisabled: true,
                         children: `No devices found named "${inputValue}"`,
                         value: NO_RESULTS,
-                        hasCheckbox: false
+                        hasCheckbox: false,
+                        uuid: 'N/A'
                     }
                 ];
             }
@@ -130,7 +134,7 @@ export default function DeviceFilter() {
         }
 
         setSelectOptions(newSelectOptions);
-    }, [devices, isLoading]);
+    }, [devices, isLoading, inputValue]);
 
     const createItemId = (value: string | number) => `select-multi-typeahead-${value.toString().replace(' ', '-')}`;
 
@@ -240,8 +244,8 @@ export default function DeviceFilter() {
 
     const onSelect = (value: string) => {
         if (value && value !== NO_RESULTS) {
-            setSelected(
-                selected.includes(value) ? selected.filter((selection) => selection !== value) : [...selected, value]
+            setSelectedDevices(
+                selectedDevices.includes(value) ? selectedDevices.filter((selection) => selection !== value) : [...selectedDevices, value]
             );
         }
 
@@ -249,7 +253,6 @@ export default function DeviceFilter() {
     };
 
     const onClearButtonClick = () => {
-        setSelected([]);
         setInputValue('');
         resetActiveAndFocusedItem();
         textInputRef?.current?.focus();
@@ -271,7 +274,7 @@ export default function DeviceFilter() {
                     onChange={onTextInputChange}
                     onKeyDown={onInputKeyDown}
                     id="device-filter-input"
-                    autoComplete="off"
+                    autoComplete="on"
                     innerRef={textInputRef}
                     placeholder={placeholder}
                     {...(activeItemId && { 'aria-activedescendant': activeItemId })}
@@ -279,7 +282,7 @@ export default function DeviceFilter() {
                     isExpanded={isOpen}
                     aria-controls="device-filter-listbox"
                 />
-                <TextInputGroupUtilities {...(selected.length === 0 ? { style: { display: 'none' } } : {})}>
+                <TextInputGroupUtilities {...(selectedDevices.length === 0 ? { style: { display: 'none' } } : {})}>
                     <Button
                         variant="plain"
                         onClick={onClearButtonClick}
@@ -297,8 +300,12 @@ export default function DeviceFilter() {
                 role="menu"
                 id="device-filter-select"
                 isOpen={isOpen}
-                selected={selected}
-                onSelect={(_event, selection) => onSelect(selection as string)}
+                selected={selectedDevices}
+                onSelect={(_event, selection) => {
+                    if (selection !== null) {
+                        onSelect(selection as string)
+                    }
+                }}
                 onOpenChange={(isOpen) => {
                     !isOpen && closeMenu();
                 }}
@@ -312,15 +319,18 @@ export default function DeviceFilter() {
                             .map((option, index) => (
                                 <SelectOption
                                     {...(!option.isDisabled && !option.isAriaDisabled && { hasCheckbox: true })}
-                                    isSelected={selected.includes(option.value)}
-                                    key={option.value || option.children}
+                                    isSelected={selectedDevices.includes(option.uuid)}
+                                    hasCheckbox={option.hasCheckbox}
+                                    isAriaDisabled={option.isAriaDisabled}
+                                    value={option.value}
+                                    key={option.uuid}
                                     isFocused={focusedItemIndex === index}
                                     className={option.className}
-                                    id={createItemId(option.value)}
+                                    id={createItemId(option.uuid)}
                                     ref={null}
                                     icon={option.imageUrl ? <Avatar
                                         src={option.imageUrl}
-                                        alt={`${option.children}'s avatar`}
+                                        alt={`${option.friendlyName || option.uuid}'s avatar`}
                                         className={"pf-v6-c-avatar pf-m-sm"}
                                         style={{verticalAlign: "bottom"}}
                                         isBordered
@@ -329,7 +339,7 @@ export default function DeviceFilter() {
                                         </Icon>
                                     }
                                 >
-                                    {option.children}
+                                    {option.friendlyName || option.uuid}
                                 </SelectOption>
                             ))}
                     </SelectList>
@@ -345,15 +355,18 @@ export default function DeviceFilter() {
                                     .map((option, index) => (
                                         <SelectOption
                                             {...(!option.isDisabled && !option.isAriaDisabled && { hasCheckbox: true })}
-                                            isSelected={selected.includes(option.value)}
-                                            key={option.value || option.children}
+                                            isSelected={selectedDevices.includes(option.uuid)}
+                                            hasCheckbox={option.hasCheckbox}
+                                            isAriaDisabled={option.isAriaDisabled}
+                                            value={option.value}
+                                            key={option.uuid}
                                             isFocused={focusedItemIndex === index}
                                             className={option.className}
-                                            id={createItemId(option.value)}
+                                            id={createItemId(option.uuid)}
                                             ref={null}
                                             icon={option.imageUrl ? <Avatar
                                                 src={option.imageUrl}
-                                                alt={`${option.children}'s avatar`}
+                                                alt={`${option.friendlyName || option.uuid}'s avatar`}
                                                 className={"pf-v6-c-avatar pf-m-sm"}
                                                 style={{verticalAlign: "bottom"}}
                                                 isBordered
@@ -362,7 +375,7 @@ export default function DeviceFilter() {
                                                     </Icon>
                                             }
                                         >
-                                            {option.children}
+                                            {option.friendlyName || option.uuid}
                                         </SelectOption>
                                         )
                                     )

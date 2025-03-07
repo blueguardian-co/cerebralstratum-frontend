@@ -29,7 +29,7 @@ type DevicesContextType = {
 const DevicesContext = createContext<DevicesContextType | undefined>(undefined);
 
 const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { token } = useAuth();
+    const { isAuthenticated, token } = useAuth();
     const [devices, setDevices] = useState<Device[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,9 @@ const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     const fetchDevices = async () => {
         setIsLoading(true);
         setError(null);
-
+        if (!isAuthenticated) {
+            return;
+        }
         try {
             configureHeaders(token);
             const response = await apiClient.get("/api/v1/devices/mine");
