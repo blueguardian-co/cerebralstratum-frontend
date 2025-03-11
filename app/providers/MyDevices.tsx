@@ -21,6 +21,7 @@ export type Device = {
 
 type DevicesContextType = {
     devices: Device[];
+    setDevices: React.Dispatch<React.SetStateAction<Device[]>>;
     isLoading: boolean;
     error: string | null;
     fetchDevices: () => Promise<void>;
@@ -62,7 +63,7 @@ const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
     return (
         <DevicesContext.Provider
-            value={{ devices, isLoading, error, fetchDevices }}
+            value={{ devices, setDevices, isLoading, error, fetchDevices }}
         >
             {children}
         </DevicesContext.Provider>

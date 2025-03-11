@@ -7,8 +7,6 @@ import {
 
 import dynamic from 'next/dynamic';
 
-import { Point } from 'geojson';
-
 import { useAuth } from './providers/AuthProvider';
 import MapProvider, { useMap } from './providers/MapProvider';
 
@@ -50,8 +48,7 @@ function MapWithSpinningGlobe() {
 }
 
 export default function Home() {
-    const { token, isAuthenticated } = useAuth();
-    const { devices, isLoading, error } = useMyDevices();
+    const { isAuthenticated } = useAuth();
     
     if (!isAuthenticated) {
         return (
@@ -65,16 +62,6 @@ export default function Home() {
         );
     }
     if (isAuthenticated) {
-        if (devices.length > 0 && !isLoading && !error) {
-            devices.forEach(device => {
-                SSEClient<EventData>(
-                    `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/v1/devices/by-id/${device.uuid}`,
-                    ["location", "status", "canbus"],
-                    token
-                );
-            })
-        }
-
         return (
             <>
                 <PageSection isFilled={true}>
