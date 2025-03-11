@@ -10,34 +10,7 @@ import dynamic from 'next/dynamic';
 import { Point } from 'geojson';
 
 import { useAuth } from './providers/AuthProvider';
-import { MapProvider, useMap } from './providers/MapProvider';
-import { useMyDevices } from './providers/MyDevices';
-import SSEClient from './components/SSEClient'
-
-type EventData = {
-    location: {
-        device_id: string,
-        coordinates: Point,
-        update_frequency: number,
-        accuracy: number,
-        speed: number,
-        bearing: number,
-        timestamp: Date
-    };
-    status: {
-        device_id: number,
-        summary: string,
-        overall: string,
-        battery: number,
-        timestamp: Date
-    };
-    canbus: {
-        device_id: string, // the ID of the tracker device
-        id: number, // the ID of the CANBUS device emitting the payload
-        payload: string
-    };
-};
-
+import MapProvider, { useMap } from './providers/MapProvider';
 
 const Map = dynamic(() => import('./components/Map'), { ssr: false });
 /* TODO:

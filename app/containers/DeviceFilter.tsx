@@ -344,7 +344,6 @@ export default function DeviceFilter({selectedDevices, setSelectedDevices}) {
                             ))}
                     </SelectList>
                 </SelectGroup>
-                {/** TODO fix this mapping. Use Keycloak/OIDC token scopes to filter organisations, rather than the backendUserProfile **/}
                 {userOrganisations?.map((organisation) => (
                     <React.Fragment key={organisation.id}>
                         <Divider />
