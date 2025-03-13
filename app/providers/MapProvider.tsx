@@ -176,10 +176,12 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
             projection: projection || 'mercator',
         });
 
-        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
         if (zoom_disabled) {
             mapInstance.scrollZoom.disable();
+        }
+
+        if (!zoom_disabled){
+            mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
         }
 
         mapInstance.on('render', () => {
@@ -197,6 +199,7 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
     return (
         <MapContext.Provider value={{ map }}>
             <div className="map-container" ref={mapContainerRef}>
+                {children}
             </div>
         </MapContext.Provider>
     );

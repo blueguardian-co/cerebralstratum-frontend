@@ -32,6 +32,7 @@ function MapWithSpinningGlobe() {
     const { map } = useMap();
 
     useEffect(() => {
+
         if (map) {
             map.on('style.load', () => {
                 map.setFog({});
@@ -54,7 +55,7 @@ export default function Home() {
         return (
             <>
                 <PageSection isFilled={true}>
-                    <MapProvider latitude={0} longitude={134} zoom={3} zoom_disabled={true} projection="globe">
+                    <MapProvider latitude={0} longitude={134} zoom={2} zoom_disabled={true} projection="globe">
                         <MapWithSpinningGlobe />
                     </MapProvider>
                 </PageSection>
