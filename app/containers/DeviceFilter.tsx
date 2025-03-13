@@ -35,10 +35,11 @@ type DeviceSelectOption = SelectOptionProps & {
     friendlyName?: string | null;
 };
 
-export default function DeviceFilter({selectedDevices, setSelectedDevices}) {
+export default function DeviceFilter() {
     const { userOrganisations } = useAuth();
-
-    // Instantiate and initialise states
+    const { devices, selectedDevices, setSelectedDevices, isLoading, error } = useMyDevices();
+    
+    const NO_RESULTS = 'No devices found';
     const initialSelectOptions: DeviceSelectOption[] = [
         {
             value: 'No devices found',
@@ -49,10 +50,6 @@ export default function DeviceFilter({selectedDevices, setSelectedDevices}) {
         }
 
     ];
-    // Initialise default variables
-    const NO_RESULTS = 'No devices found';
-    // Device details
-    const { devices, isLoading, error } = useMyDevices();
 
     const [isOpen, setIsOpen] = useState(false);
     const [inputValue, setInputValue] = useState<string>('');

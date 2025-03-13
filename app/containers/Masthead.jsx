@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuth } from "../providers/AuthProvider";
+import { useMyDevices } from '../providers/MyDevices';
 import AppNotificationDrawer from "./NotificationDrawer";
 import BackendNotificationService from "../services/BackendNotifications";
 import SubscriptionNotificationService from "../services/SubscriptionNotifications";
@@ -84,8 +85,6 @@ export default function AppMasthead(
         subscriptionNotifications,
         setSubscriptionNotifications,
         userProfile,
-        selectedDevices,
-        setSelectedDevices,
     }
 ) {
     const { isAuthenticated, user, login, logout,backendUserProfile } = useAuth();
@@ -137,6 +136,8 @@ export default function AppMasthead(
         );
     }
     if (isAuthenticated) {
+        const {devices, selectedDevices, setSelectedDevices} = useMyDevices();
+
         React.useEffect(() => {
             const backendUserProfile = async () => {
                 await BackendUserProfile

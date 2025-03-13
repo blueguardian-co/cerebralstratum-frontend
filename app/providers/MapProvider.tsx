@@ -88,7 +88,6 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
     );
 
     function setupDeviceEventSource(eventType: string, device: Device, token: string | null, callback) {
-        console.debug("Setting up event source for device: " + device.uuid);
         // @ts-ignore
         const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/v1/devices/by-id/${device.uuid}/${eventType}`, {
             fetch: (input, init) =>
@@ -102,7 +101,7 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
         });
 
         eventSource.onopen = (event) => {
-            console.debug("Event source opened:", event);
+            //console.debug("Event source opened:", event);
         };
 
         eventSource.onmessage = (event) => {
@@ -120,7 +119,6 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
 
     useEffect(() => {
         if (isAuthenticated && devices && devices.length > 0) {
-            console.debug("Setting up event sources for devices: " + devices.map((device) => device.uuid).join(", "));
             const cleanupFunctions: Record<string, () => void> = {};
 
             devices.forEach(device => {
@@ -146,18 +144,17 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
 
         // Clean up markers for devices that are no longer selected
         Object.keys(markersRef.current).forEach(deviceId => {
-            if (!selectedDevices.some(device => device === deviceId)) {
+            if (!selectedDevices.some((device: string) => device === deviceId)) {
                 markersRef.current[deviceId].remove();
                 delete markersRef.current[deviceId];
             }
         });
 
         // Create markers for newly selected devices
-        selectedDevices.forEach(selectedDevice => {
+        selectedDevices.forEach((selectedDevice: string) => {
             const deviceId = selectedDevice;
             const deviceData = eventDataMap[deviceId];
-
-            // Only create markers for devices with location data
+            
             if (deviceData?.location?.coordinates) {
                 // If marker doesn't exist for this device, create one
                 if (!markersRef.current[deviceId]) {

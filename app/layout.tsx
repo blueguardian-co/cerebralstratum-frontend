@@ -19,7 +19,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const [backendNotificationGroupExpanded, setBackendNotificationGroupExpanded] = React.useState(false);
     const [subscriptionNotificationGroupExpanded, setSubscriptionNotificationGroupExpanded] = React.useState(false);
     const [userProfile] = React.useState(null);
-    const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
     /*
     * Handle Dark Theme
     * Credit: https://sreetamdas.com/blog/the-perfect-dark-mode
@@ -59,22 +58,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     }, [isDarkThemeEnabled]);
 
     /* Backend Notification Management */
-    const defaultBackendNotification = {
+    const defaultBackendNotification: BackendNotification = {
         id: -1,
         title: 'Initialising...',
         description: 'Fetching backend status...',
         severity: 'info',
-        timestamp: new Date(),
+        timestamp: new Date().toDateString(),
         read: false,
     };
 
-    const [backendNotifications, setBackendNotifications] = React.useState(() => {
-        if (typeof window === 'undefined') return;
+    type BackendNotification = {
+        id: number,
+        title: string,
+        description: string,
+        severity: 'success' | 'warning' | 'info',
+        timestamp: string,
+        read: boolean,
+    }
+
+    const [backendNotifications, setBackendNotifications] = React.useState<BackendNotification | null>(() => {
+        if (typeof window === 'undefined') return null;
 
         try {
-            const saved = localStorage.getItem('backend_notifications');
-            return saved ? JSON.parse(saved) : defaultBackendNotification;
-        } catch {
+            const savedString = localStorage.getItem('backend_notifications');
+            if (savedString) {
+                const saved: BackendNotification = JSON.parse(savedString);
+                return saved;
+            } else {
+                return defaultBackendNotification;
+            }
+        } catch (error) {
+            console.error("Error parsing saved BackendNotification, returning default", error);
             return defaultBackendNotification;
         }
     });
@@ -133,8 +147,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                 isNotificationDrawerOpen={isNotificationDrawerOpen}
                                 onCloseNotificationDrawer={onCloseNotificationDrawer}
                                 userProfile={userProfile}
-                                selectedDevices={selectedDevices}
-                                setSelectedDevices={setSelectedDevices}
                             />
                         }
                         sidebar={
@@ -185,8 +197,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                 isNotificationDrawerOpen={isNotificationDrawerOpen}
                                 onCloseNotificationDrawer={onCloseNotificationDrawer}
                                 userProfile={userProfile}
-                                selectedDevices={selectedDevices}
-                                setSelectedDevices={setSelectedDevices}
                             />
                         }
                         sidebar={

@@ -22,6 +22,8 @@ export type Device = {
 type DevicesContextType = {
     devices: Device[];
     setDevices: React.Dispatch<React.SetStateAction<Device[]>>;
+    selectedDevices: string[];
+    setSelectedDevices: React.Dispatch<React.SetStateAction<string[]>>;
     isLoading: boolean;
     error: string | null;
     fetchDevices: () => Promise<void>;
@@ -32,6 +34,7 @@ const DevicesContext = createContext<DevicesContextType | undefined>(undefined);
 const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, token } = useAuth();
     const [devices, setDevices] = useState<Device[]>([]);
+    const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +66,7 @@ const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
     return (
         <DevicesContext.Provider
-            value={{ devices, setDevices, isLoading, error, fetchDevices }}
+            value={{ devices, setDevices, selectedDevices, setSelectedDevices, isLoading, error, fetchDevices }}
         >
             {children}
         </DevicesContext.Provider>
