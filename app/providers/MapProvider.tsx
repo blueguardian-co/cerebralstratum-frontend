@@ -56,6 +56,15 @@ type EventData = {
     // };
 };
 
+function spinGlobe(map: mapboxgl.Map, secondsPerRevolution: number = 720) {
+    const distancePerSecond = 360 / secondsPerRevolution;
+    return () => {
+        const center = map.getCenter();
+        center.lng -= distancePerSecond;
+        map.easeTo({ center, duration: 1000, easing: (n) => n });
+    };
+}
+
 export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoom_disabled, projection, children }) => {
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
     const [map, setMap] = useState<mapboxgl.Map | null>(null);
@@ -164,6 +173,25 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
         });
     }, [map, selectedDevices, eventDataMap]);
 
+    useEffect(() => {
+        if (!isAuthenticated) {
+            if (map) {
+                map.setCenter([134, 0])
+                map.setZoom(2)
+                map.scrollZoom.disable();
+                map.setProjection("globe")
+                map.on('style.load', () => {
+                    map.setFog({});
+                });
+
+                const spin = spinGlobe(map);
+                const interval = setInterval(spin, 1000); // Call `spin` every second
+
+                return () => clearInterval(interval);
+            }
+        }
+    }, [map]);
+
 
     useEffect(() => {
         if (!mapContainerRef.current) return;
@@ -176,11 +204,7 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
             projection: projection || 'mercator',
         });
 
-        if (zoom_disabled) {
-            mapInstance.scrollZoom.disable();
-        }
-
-        if (!zoom_disabled){
+        if (isAuthenticated) {
             mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
         }
 
@@ -199,7 +223,6 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
     return (
         <MapContext.Provider value={{ map }}>
             <div className="map-container" ref={mapContainerRef}>
-                {children}
             </div>
         </MapContext.Provider>
     );
