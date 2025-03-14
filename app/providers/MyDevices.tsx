@@ -62,6 +62,7 @@ const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
     useEffect(() => {
         fetchDevices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     return (

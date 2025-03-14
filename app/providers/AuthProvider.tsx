@@ -1,5 +1,5 @@
 import React, { useEffect, useState, createContext, useContext, ReactNode } from "react";
-// @ts-expect-error
+// @ts-expect-error Need to define Keycloak Types using the admin client
 import Keycloak, { KeycloakConfig, KeycloakInstance } from "keycloak-js";
 import type OrganizationRepresentation from '@keycloak/keycloak-admin-client/lib/defs/organizationRepresentation';
 
@@ -72,7 +72,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    const fetchBackendUserProfile = async (token: string, userId: string) => {
+    const fetchBackendUserProfile = async (token: string) => {
         try {
             configureHeaders(token);
             const response = await apiClient.get(`/api/v1/authorisation/users/me`);
@@ -136,6 +136,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 decodeToken(keycloak.token);
             }
         } catch (error) {
+            console.error("Token refresh error:", error);
             logout();
         }
     };
@@ -166,7 +167,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     useEffect(() => {
         if (user && token) {
-            fetchBackendUserProfile(token, user.sub);
+            fetchBackendUserProfile(token);
             fetchUserOrganisations(token, user.sub);
         }
     }, [user, token]);
@@ -183,12 +184,13 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
         }, 30000);
 
-        return () => clearInterval(refreshInterval); // Cleanup on component unmount
-    },[]);
+        return () => clearInterval(refreshInterval);
     // Requires empty dependency array, to avoid trying to init continously
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[]);
 
     if (!isAuthInitialized) {
-        return <div>Keycloak Initialising...</div>; // Show a loading state while initializing
+        return <div>Securing application...</div>; // Show a loading state while initializing
     }
 
     return (

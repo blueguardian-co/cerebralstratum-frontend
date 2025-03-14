@@ -65,7 +65,7 @@ function spinGlobe(map: mapboxgl.Map, secondsPerRevolution: number = 720) {
     };
 }
 
-export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoom_disabled, projection, children }) => {
+export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoom_disabled, projection }) => {
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
     const [map, setMap] = useState<mapboxgl.Map | null>(null);
     const [eventDataMap, setEventDataMap] = useState<Record<string, EventData>>({});
@@ -88,7 +88,7 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
     );
 
     function setupDeviceEventSource(eventType: string, device: Device, token: string | null, callback) {
-        // @ts-ignore
+        // @ts-expect-error ESLint can't handle the `init.headers` typing
         const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/v1/devices/by-id/${device.uuid}/${eventType}`, {
             fetch: (input, init) =>
                 fetch(input, {
@@ -101,7 +101,7 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
         });
 
         eventSource.onopen = (event) => {
-            //console.debug("Event source opened:", event);
+            console.debug(event);
         };
 
         eventSource.onmessage = (event) => {
@@ -187,6 +187,7 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
                 return () => clearInterval(interval);
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [map]);
 
 
@@ -215,6 +216,7 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
             mapInstance.remove();
             setMap(null);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [latitude, longitude, zoom, zoom_disabled, projection]);
 
     return (

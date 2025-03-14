@@ -9,10 +9,20 @@ type SubscriptionNotification = {
     read: boolean,
 }
 
+type BackendUserProfile = {
+    keycloak_user_id: string;
+    keycloak_org_id: string;
+    created: Date;
+    subscription_active: boolean;
+    subscription_discount: number;
+    subscription_entitlement: number;
+    subscription_used: number;
+}
+
 type SubscriptionNotificationServiceProps = {
     subscriptionNotifications: SubscriptionNotification;
     setSubscriptionNotifications: React.Dispatch<React.SetStateAction<SubscriptionNotification>>;
-    backendUserProfile: any;
+    backendUserProfile: BackendUserProfile;
 };
 
 export default function SubscriptionNotificationService(
@@ -79,6 +89,7 @@ export default function SubscriptionNotificationService(
         return () => {
             mounted = false;
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [backendUserProfile]);
     return null;
-    };
+};

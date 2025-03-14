@@ -6,7 +6,7 @@ import {
 
 import dynamic from 'next/dynamic';
 
-import MapProvider, { useMap } from './providers/MapProvider';
+import MapProvider from './providers/MapProvider';
 
 const Map = dynamic(() => import('./components/Map'), { ssr: false });
 /* TODO:

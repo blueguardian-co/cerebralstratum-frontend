@@ -93,7 +93,7 @@ export default function BackendNotificationService(
             mounted = false;
             clearInterval(intervalId);
         };
-        
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
     return null;
 };

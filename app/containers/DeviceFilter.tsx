@@ -35,7 +35,7 @@ type DeviceSelectOption = SelectOptionProps & {
     friendlyName?: string | null;
 };
 
-export default function DeviceFilter() {
+function DeviceFilter() {
     const { userOrganisations } = useAuth();
     const { devices, selectedDevices, setSelectedDevices, isLoading, error } = useMyDevices();
     
@@ -58,7 +58,6 @@ export default function DeviceFilter() {
     const [activeItemId, setActiveItemId] = useState<string | null>(null);
     const [placeholder] = useState('Filter displayed devices');
     const textInputRef = useRef<HTMLInputElement>(null)
-    const [suggestedItems] = useState<string[]>(devices.map(device => device.name || device.uuid));
 
     useEffect(() => {
         if (isLoading) {
@@ -131,6 +130,8 @@ export default function DeviceFilter() {
         }
 
         setSelectOptions(newSelectOptions);
+    // Only specify the required dependencies in the dependency array, otherwise we can get render loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [devices, isLoading, inputValue]);
 
     const createItemId = (value: string | number) => `select-multi-typeahead-${value.toString().replace(' ', '-')}`;
@@ -304,7 +305,9 @@ export default function DeviceFilter() {
                     }
                 }}
                 onOpenChange={(isOpen) => {
-                    !isOpen && closeMenu();
+                    if (!isOpen) {
+                        closeMenu();
+                    }
                 }}
                 toggle={toggle}
                 variant={"typeahead"}
@@ -385,4 +388,6 @@ export default function DeviceFilter() {
               </Select>
         </>
     );
-}
+};
+
+export default DeviceFilter;
