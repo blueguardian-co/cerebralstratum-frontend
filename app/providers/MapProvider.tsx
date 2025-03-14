@@ -87,7 +87,7 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
         [setEventDataMap]
     );
 
-    function setupDeviceEventSource(eventType: string, device: Device, token: string | null, callback: { (eventType: string, data: EventData): void; (arg0: string, arg1: any): void; }) {
+    function setupDeviceEventSource(eventType: string, device: Device, token: string | null, callback: { (eventType: string, data: EventData): void; }) {
         const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/api/v1/devices/by-id/${device.uuid}/${eventType}`, {
             fetch: (input, init) =>
                 fetch(input, {
