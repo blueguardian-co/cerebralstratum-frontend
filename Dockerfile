@@ -14,7 +14,7 @@ COPY . .
 
 RUN npm run build
 
-RUN npm prune --omit=dev
+RUN npm prune --omit=dev --force
 
 # Stage 2: Production Stage
 FROM registry.redhat.io/rhel9/nodejs-22-minimal:latest AS runner
