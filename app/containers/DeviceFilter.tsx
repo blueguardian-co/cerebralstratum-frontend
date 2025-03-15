@@ -240,10 +240,16 @@ function DeviceFilter() {
         resetActiveAndFocusedItem();
     };
 
+    useEffect(() => {
+        localStorage.setItem('selected_devices', JSON.stringify(selectedDevices));
+    }, [selectedDevices]);
+
+
     const onSelect = (value: string) => {
         if (value && value !== NO_RESULTS) {
-            setSelectedDevices(
-                selectedDevices.includes(value) ? selectedDevices.filter((selection) => selection !== value) : [...selectedDevices, value]
+            (selectedDevices.includes(value)
+                ? setSelectedDevices(selectedDevices.filter((selection) => selection !== value))
+                : setSelectedDevices([...selectedDevices, value])
             );
         }
 

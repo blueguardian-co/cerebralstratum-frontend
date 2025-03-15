@@ -34,9 +34,28 @@ const DevicesContext = createContext<DevicesContextType | undefined>(undefined);
 const MyDevicesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, token } = useAuth();
     const [devices, setDevices] = useState<Device[]>([]);
-    const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [selectedDevices, setSelectedDevices] = React.useState<string[]>((): string[] => {
+        if (typeof window === 'undefined') return [];
+
+        try {
+            const savedString = localStorage.getItem('selected_devices');
+            if (savedString) {
+                const saved: string[] = JSON.parse(savedString);
+                return saved;
+            } else {
+                if (devices.length > 0){
+                    return devices.map(device => device.uuid);
+                }
+                return [];
+            }
+        } catch (error) {
+            console.error("Error parsing saved 'selected devices' preference, returning default", error);
+            return [];
+        }
+    });
 
     const fetchDevices = async () => {
         setIsLoading(true);

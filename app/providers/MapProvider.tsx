@@ -99,11 +99,7 @@ export const MapProvider: React.FC<MapProps> = ({ latitude, longitude, zoom, zoo
                     },
                 }),
         });
-
-        eventSource.onopen = (event) => {
-            console.debug(event);
-        };
-
+        
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
             console.debug("Received event data:", data);
