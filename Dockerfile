@@ -5,10 +5,7 @@ USER 1001
 
 WORKDIR /opt/app-root/src
 
-COPY --chown=1001:0 --chmod=664 package.json package-lock.json ./
-
-# Fix EACCES issues
-RUN npm install -g npm
+COPY --chown=1001:0 --chmod=777 package.json package-lock.json ./
 
 # We have to use --force, as Patternfly doesn't support react 19 yet.
 RUN npm install --frozen-lockfile --force
