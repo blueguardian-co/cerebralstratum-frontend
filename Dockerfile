@@ -5,7 +5,10 @@ USER 1001
 
 WORKDIR /opt/app-root/src
 
-COPY --chown=1001:0 --chmod=666 package.json package-lock.json ./
+COPY --chown=1001:0 --chmod=664 package.json package-lock.json ./
+
+# Fix EACCES issues
+RUN npm install -g npm
 
 # We have to use --force, as Patternfly doesn't support react 19 yet.
 RUN npm install --frozen-lockfile --force
@@ -23,10 +26,10 @@ USER 1001
 
 WORKDIR /opt/app-root/src
 
-COPY --from=builder /opt/app-root/src/next.config.js ./
+COPY --chown=664 --from=builder /opt/app-root/src/next.config.js ./
 COPY --chown=664 --from=builder /opt/app-root/src/package.json /opt/app-root/src/package-lock.json ./
-COPY --from=builder /opt/app-root/src/public ./public
-COPY --from=builder /opt/app-root/src/.next ./.next
+COPY --chown=664 --from=builder /opt/app-root/src/public ./public
+COPY --chown=664 --from=builder /opt/app-root/src/.next ./.next
 COPY --chown=664 --from=builder /opt/app-root/src/node_modules ./node_modules
 
 ENV NODE_ENV=production
