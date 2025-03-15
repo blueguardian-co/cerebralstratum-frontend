@@ -23,11 +23,11 @@ USER 1001
 
 WORKDIR /opt/app-root/src
 
-COPY --chown=664 --from=builder /opt/app-root/src/next.config.js ./
-COPY --chown=664 --from=builder /opt/app-root/src/package.json /opt/app-root/src/package-lock.json ./
-COPY --chown=664 --from=builder /opt/app-root/src/public ./public
-COPY --chown=664 --from=builder /opt/app-root/src/.next ./.next
-COPY --chown=664 --from=builder /opt/app-root/src/node_modules ./node_modules
+COPY --chmod=664 --from=builder /opt/app-root/src/next.config.js ./
+COPY --chmod=664 --from=builder /opt/app-root/src/package.json /opt/app-root/src/package-lock.json ./
+COPY --chmod=664 --from=builder /opt/app-root/src/public ./public
+COPY --chmod=664 --from=builder /opt/app-root/src/.next ./.next
+COPY --chmod=664 --from=builder /opt/app-root/src/node_modules ./node_modules
 
 ENV NODE_ENV=production
 ENV PORT=3000
