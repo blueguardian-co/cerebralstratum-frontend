@@ -247,12 +247,12 @@ function DeviceFilter() {
 
     const onSelect = (value: string) => {
         if (value && value !== NO_RESULTS) {
-            (selectedDevices.includes(value)
-                ? setSelectedDevices(selectedDevices.filter((selection) => selection !== value))
-                : setSelectedDevices([...selectedDevices, value])
-            );
+            if (selectedDevices.includes(value)) {
+                setSelectedDevices(selectedDevices.filter((selection) => selection !== value))
+            } else {
+                setSelectedDevices([...selectedDevices, value])
+            }
         }
-
         textInputRef.current?.focus();
     };
 
