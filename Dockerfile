@@ -1,7 +1,7 @@
 # Stage 1: Build Stage
 FROM registry.redhat.io/rhel9/nodejs-22-minimal:latest AS builder
 
-USER 1001
+USER 0
 
 WORKDIR /opt/app-root/src
 
