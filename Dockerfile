@@ -10,7 +10,7 @@ COPY --chown=1001:0 --chmod=777 package.json package-lock.json ./
 # We have to use --force, as Patternfly doesn't support react 19 yet.
 RUN npm install --frozen-lockfile --force
 
-COPY . .
+COPY --chown=1001:0 . .
 
 RUN npm run build
 
@@ -23,7 +23,7 @@ USER 1001
 
 WORKDIR /opt/app-root/src
 
-COPY --chmod=664 --from=builder /opt/app-root/src/next.config.js ./
+COPY --chmod=664 --from=builder /opt/app-root/src/next.config.ts ./
 COPY --chmod=664 --from=builder /opt/app-root/src/package.json /opt/app-root/src/package-lock.json ./
 COPY --chmod=664 --from=builder /opt/app-root/src/public ./public
 COPY --chmod=664 --from=builder /opt/app-root/src/.next ./.next
