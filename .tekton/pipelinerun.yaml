@@ -74,8 +74,6 @@ spec:
         workspaces:
           - name: output
             workspace: argocd_source
-          - name: basic-auth
-            workspace: basic-auth
       - name: deploy
         taskRef:
           kind: Task
