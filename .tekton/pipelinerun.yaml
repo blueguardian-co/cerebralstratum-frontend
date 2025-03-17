@@ -81,8 +81,8 @@ spec:
         runAfter:
           - git-clone-argocd-repo
         params:
-          - name: kustomization_directory
-            value: environments/production
+          - name: kustomization_environment
+            value: production
           - name: image_url
             value: $(params.image)
           - name: image_digest
