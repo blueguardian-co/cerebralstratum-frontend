@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@patternfly/react-core": "^6.1.0",
+    "@patternfly/react-core": "^6.2.1",
     "@patternfly/react-icons": "^6.1.0",
     "@patternfly/react-styles": "^6.1.0",
     "@types/geojson": "^7946.0.16",
