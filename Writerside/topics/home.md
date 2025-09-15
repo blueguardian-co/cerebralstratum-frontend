@@ -1,5 +1,5 @@
-# CEREBRAL STRATUM Frontend
+# CEREBRAL STRATUM Frontend Application
 
-> Tracker Platform - Web UI
+> Tracker Platform - Frontend Application
 
-This is the technical documentation for the CEREBRAL STRATUM frontend.
+This is the technical documentation for the CEREBRAL STRATUM frontend application.

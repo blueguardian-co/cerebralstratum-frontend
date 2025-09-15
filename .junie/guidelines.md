@@ -1,0 +1,73 @@
+1. **Build/Configuration Instructions**:
+    - Local development: IntelliJ IDEA. CI/CD: Tekton Pipelines as Code (PaC); provenance via Tekton Chains.
+    - Builds: per‑platform builds and a matrix “all‑platforms” build where applicable.
+    - Production‑impacting configuration changes must be documented in [`Writerside`](../Writerside).
+    - Artifacts and publication:
+        - We will not publish desktop applications; users are expected to use the web version.
+            - The web version is published as container images (see Container images below).
+        - Container images (Linux, Red Hat UBI base): publish to Quay → https://quay.io/repository/blueguardian-co/cerebral-stratum/frontend
+        - iOS, iPadOS, watchOS: publish via App Store Connect.
+        - Android: publish via Google Play Console.
+    - Security and supply chain:
+        - Maintain a security policy and generate a security report per release as applicable.
+        - Generate an SBOM for each build (CycloneDX preferred) and attach it to release artifacts and container images.
+        - All artifacts and container images are signed in CI using `cosign`; use keyless OIDC where possible via Tekton Chains.
+        - Require signed git commits for all merges to protected branches.
+        - Require SLSA/in‑toto provenance attestations from Tekton Chains; verify signatures and provenance at admission time.
+        - Container image and dependency vulnerability scanning (e.g., Trivy or Grype) runs in CI; fail the pipeline on critical findings.
+        - Pin toolchains and dependencies: JDK, Kotlin, Gradle, Node.js/npm; use `npm ci` and Gradle dependency locks for reproducibility.
+        - Apply OCI image labels/annotations: source repo URL, VCS ref (commit SHA), version/semver, build date, SBOM reference, maintainers.
+    - Deployment (GitOps):
+        - Resulting images are deployed to Red Hat OpenShift using Argo CD and Argo Rollouts.
+        - Environment‑specific GitOps configuration is stored in a separate repository.
+        - Project‑specific but environment‑agnostic GitOps content is stored in this repository under `.argocd`.
+        - Admission control policies should enforce: signed images from approved registries, immutable tags (no `latest`), pin by digest where possible, `runAsNonRoot`, `allowPrivilegeEscalation=false`, resource limits/requests, `readOnlyRootFilesystem`, `seccompProfile=RuntimeDefault`, and minimal capabilities.
+
+2. **Testing Information**:
+    - Write and maintain tests runnable locally and in CI for all relevant platforms.
+    - Focus: regression testing here; performance/load testing is handled in a separate project.
+    - Kotlin Multiplatform: use `kotlin.test` and platform‑specific tests as needed; collect coverage (e.g., `kover`).
+    - JS/TS (frontend): unit tests (e.g., `vitest` or `jest`) with React Testing Library; E2E tests (e.g., `playwright` or `cypress`) as scope grows.
+    - CI must publish test reports and coverage; set and enforce coverage thresholds (initially ≥ 80% line/branch where practical) via `kover` and test runner configs.
+    - Targeted coverage policy:
+      - Diff coverage: require ≥ 90% coverage on lines changed in a PR (exceptions allowed with justification for glue/config code).
+      - Critical modules: designate security/auth/persistence/serialization/concurrency components as “critical”; maintain ≥ 90% line and ≥ 80% branch coverage for these.
+        - Further details in the Critical modules section of the `Writerside` documentation.
+      - Test pyramid and scope:
+          - Keep a small, reliable E2E/UI smoke suite (happy path + one key failure path). Prioritize unit and contract/integration tests for the rest.
+      - Runtime budget and flake control:
+          - Unit + integration tests should complete in ≤ ~10 minutes in CI for PRs; quarantine flaky tests and fix on a time budget.
+      - Waivers and documentation:
+          - Temporary waivers require a YouTrack issue link and must be noted in Writerside release notes or technical debt logs.
+
+3. **Additional Development Information**:
+    - Documentation: Developer, maintainer, and end‑user docs are authored in `Writerside`. The root `README.md` should provide a project overview and link to `Writerside` as the canonical source.
+    - Writerside should be built and published to GitHub Pages: https://cerebralstratum-frontend.github.io
+        - Writerside build should also output [`llms.txt`](https://www.jetbrains.com/help/writerside/generate-llms-txt.html).
+    - Work tracking: All issues, RFEs, and bugs are managed in YouTrack → https://youtrack.blueguardian.co
+    - Review cadence: This file is reviewed periodically and updated as required (at least quarterly or upon major tooling/process changes).
+    - Kotlin code quality and style:
+        - Tools: `ktlint`, `detekt`, `spotless` (versions pinned). Align with the official Kotlin Coding Conventions.
+    - JavaScript/TypeScript code quality and style:
+        - Tools: `eslint`, `prettier` (versions pinned). Enable strict TypeScript settings where applicable.
+    - Branching and development process:
+        - Trunk‑based development with short‑lived feature branches.
+        - All PRs must pass linters, tests, SBOM generation, signing, provenance, and vulnerability scanning before merge.
+        - Enable Renovate or Dependabot for Gradle, npm, and Docker base images; dependency PRs must pass the same gates.
+    - Code ownership and PR hygiene:
+      - Maintain `CODEOWNERS` to enforce reviews on critical areas.
+      - Use a PR template with checkboxes for: tests updated, Writerside docs updated, SBOM generated, image signed, provenance present, vulnerability scan passed.
+      - Security policy:
+          - Keep `SECURITY.md` with reporting process, SLAs, supported versions, and severity classification; link it from Writerside.
+      - Container images and promotions:
+          - CI builds container images only when a PR is raised against `main` or when the PR is updated.
+          - Feature‑branch images are tagged with the PR number and RFC‑1035‑compliant branch name; tags must be immutable.
+          - Upon merge to `main`, Tekton promotes images by updating the GitOps manifests; Argo CD performs sync and Argo Rollouts manages progressive delivery.
+          - Manifests should pin images by immutable tag and, where possible, by digest.
+      - IDE and repo standards:
+          - Maintain a root `.editorconfig` as authoritative; optionally share IntelliJ inspections/code style and typical run configurations.
+
+**Important Notes**:
+- This guidance targets advanced developers; it omits generic tooling instructions and focuses on project‑specific policies.
+- Validate that any referenced test commands and pipelines succeed before committing changes to this file.
+- Do not commit temporary files; keep only `.junie/guidelines.md` for this guidance.

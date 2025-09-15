@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Monorepo: Next.js UI + Kotlin Multiplatform shared code.
+
+This repository contains a Next.js web UI and a Kotlin Multiplatform (KMP) module under shared/ for cross‑platform business logic shared by Web, Android, iOS, and Desktop (JVM).
 
 ## Getting Started
 
@@ -19,6 +21,26 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Kotlin Multiplatform module (shared/)
+
+Build all targets:
+
+```bash
+./gradlew :shared:build
+```
+
+Example common API defined in shared/src/commonMain:
+- function: com.cerebralstratum.shared.greeting(AppInfo)
+
+JS target produces a library artifact (IR). Initial integration plan with Next.js:
+1. Build JS library: `./gradlew :shared:jsBrowserProductionLibraryDistribution` (or `:shared:build`).
+2. Consume artifact in Next.js via a local package step (to be set up next), or through a simple wrapper published to an internal registry.
+
+Android and iOS targets build a library/framework that native apps can consume. Desktop can be added later as a JVM target if needed.
+
+## Web stack decision
+We evaluated using Kotlin/JS for the web UI vs. keeping Next.js. Decision: keep Next.js for UI and consume the Kotlin Multiplatform shared JS artifact. This maximizes Kotlin where it matters (business logic) while retaining the React ecosystem. See docs/adr/0001-web-stack-decision.md.
 
 ## Learn More
 

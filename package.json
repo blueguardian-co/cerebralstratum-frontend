@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "kmp:build": "./gradlew :shared:build",
+    "kmp:js": "./gradlew :shared:jsBrowserProductionLibraryDistribution"
   },
   "dependencies": {
     "@patternfly/react-core": "^6.1.0",

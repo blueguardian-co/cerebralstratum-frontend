@@ -90,6 +90,16 @@ export default function AppMasthead(
     const { isAuthenticated, user, login, logout,backendUserProfile } = useAuth();
     const [isAccountOpen, setIsAccountOpen] = React.useState(false);
     const [isDeviceOpen, setIsDeviceOpen] = React.useState(false);
+    const [isSystemTheme, setIsSystemTheme] = React.useState(true);
+    const setToSystemTheme = () => {
+        const mediaQuery = "(prefers-color-scheme: dark)";
+        const mql = window.matchMedia(mediaQuery);
+        const hasPreference = typeof mql.matches === "boolean";
+        if (hasPreference) {
+            const systemTheme = mql.matches ? "dark" : "light";
+            setDarkThemeEnabled(systemTheme === "dark");
+        }
+    };
 
     const onAccountToggleClick = () => {
         setIsAccountOpen(!isAccountOpen);
@@ -100,6 +110,7 @@ export default function AppMasthead(
 
     const onDarkThemeToggleClick = () => {
         setDarkThemeEnabled(!isDarkThemeEnabled);
+        setIsSystemTheme(false);
     };
 
     if (!isAuthenticated) {
@@ -235,6 +246,13 @@ export default function AppMasthead(
                                             buttonId={"toggle-group-dark-theme"}
                                             isSelected={isDarkThemeEnabled}
                                             onClick={onDarkThemeToggleClick}
+                                        />
+                                        <ToggleGroupItem
+                                            icon={<MoonIcon style={isDarkThemeEnabled ? {filter: "invert(1)"} : {filter: "invert(0)"}} />}
+                                            aria-label={"System Defined"}
+                                            buttonId={"toggle-group-system-theme"}
+                                            isSelected={isSystemTheme}
+                                            onClick={setToSystemTheme}
                                         />
                                     </ToggleGroup>
                                 </ToolbarItem>
