@@ -39,3 +39,35 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Kotlin Multiplatform specific
+.gradle/
+**/build/
+local.properties
+
+# Native (iOS & Android)
+*.iml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries/
+.idea/caches
+.idea/modules.xml
+.idea/navEditor.xml
+.idea/shelf
+
+# iOS specific
+**/xcuserdata/
+**/ios/Pods/
+**/ios/Podfile.lock
+**/iosApp/build/
+
+# Android specific
+**/captures/
+.externalNativeBuild
+.cxx/
+
+# Shared KMP module
+/shared/build/

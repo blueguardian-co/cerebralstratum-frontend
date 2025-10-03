@@ -39,8 +39,15 @@ JS target produces a library artifact (IR). Initial integration plan with Next.j
 
 Android and iOS targets build a library/framework that native apps can consume. Desktop can be added later as a JVM target if needed.
 
-## Web stack decision
-We evaluated using Kotlin/JS for the web UI vs. keeping Next.js. Decision: keep Next.js for UI and consume the Kotlin Multiplatform shared JS artifact. This maximizes Kotlin where it matters (business logic) while retaining the React ecosystem. See docs/adr/0001-web-stack-decision.md.
+## Architecture Decision Records
+- ADR-0001 — Web Stack Decision: keep Next.js for Web UI initially while using KMP for shared logic. See Writerside: Writerside/topics/adrs/0001-web-stack-decision.md.
+- ADR-0002 — Kotlin Multiplatform Migration Plan: phased plan to deliver Web (Kotlin/Wasm), Desktop (JVM), iOS, Android, and decommission Next.js after cutover. See Writerside: Writerside/topics/adrs/0002-kmp-migration-plan.md.
+
+## Documentation
+Writerside is the canonical documentation source for this repository. The site is published to GitHub Pages:
+- https://cerebralstratum-frontend.github.io
+
+Edit docs under Writerside/. Writerside should also output llms.txt as part of the build.
 
 ## Learn More
 

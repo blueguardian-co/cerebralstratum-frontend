@@ -10,6 +10,7 @@
     <toc-element topic="Development.md"/>
     <toc-element topic="ADRs.md">
         <toc-element topic="0001-web-stack-decision.md"/>
+        <toc-element topic="0002-kmp-migration-plan.md"/>
     </toc-element>
     <toc-element topic="about.md"/>
 </instance-profile>
