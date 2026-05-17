@@ -1,22 +1,80 @@
 # Development
 
-## Definitions and Policies
+## Prerequisites
 
-### Critical modules
+- JDK 11+
+- Node.js 20+ and npm 10+
+- Android SDK (for Android targets)
+- Xcode (for iOS targets)
 
-#### Critical modules (definition)
-Critical modules are areas where defects can compromise security, data integrity, availability, or contractual behavior. In this project, that includes:
-- Security/auth (authentication/authorization, token/session handling, input validation)
-- Data/persistence (DB/KV layers, schema/migrations, caching/invalidation, PII handling)
-- Contracts/serialization (DTOs/schemas, JSON serialization, API compatibility; KMP ↔ JS models)
-- Concurrency/state (coroutines/flows, threading/synchronization, retries/idempotency)
-- Platform boundaries (KMP expect/actual bridges, platform shims, feature flags/config gates)
-- Payments/business rules (if present)
+## Project Structure
 
-#### Critical modules (policy)
-- Coverage: ≥ 90% line and ≥ 80% branch; enforced in CI. Drops require a waiver (YouTrack link) and CODEOWNERS approval.
-- Diff coverage: ≥ 90% on changed lines for PRs; same waiver process for exceptions.
-- Reviews/change control: CODEOWNERS review required. Breaking contract/schema changes must include migration + rollback notes in `Writerside`.
-- Test scope: unit + contract/integration first; property-based tests where valuable. Keep E2E to the smoke suite.
-- Observability: add/update logs/metrics for key failure modes impacted by the change.
-- Waivers: temporary, YouTrack-linked, and recorded in `Writerside` release notes or tech-debt logs.
+| Module | Purpose |
+|---|---|
+| `shared/` | KMP shared library — data models, API client, auth state |
+| `composeApp/` | Compose Multiplatform UI — Android and Desktop |
+| `webApp/` | React + TypeScript web app, consumes `shared/` Kotlin/JS output |
+| `iosApp/` | iOS native entry point (Swift/Xcode) |
+
+## Web App
+
+The web app (`webApp/`) is a Vite + React + TypeScript SPA served on port 8080.
+It imports domain types and API client logic from the Kotlin `shared/` module via the npm workspace.
+
+### Build and run
+
+```bash
+# 1. Compile the Kotlin shared module to JS
+./gradlew :shared:jsBrowserDevelopmentLibraryDistribution
+
+# 2. Install npm dependencies (first time or after dependency changes)
+npm install
+
+# 3. Start the Vite dev server (http://localhost:8080)
+cd webApp && npm run start
+```
+
+### Environment variables
+
+All configuration is injected at **runtime** via `webApp/public/env.js` (see [ADR-0006](0006-runtime-environment-variables.md)).
+Copy `webApp/.env.example` to understand the available variables; do not rely on build-time env vars.
+
+| Variable | Description | Default |
+|---|---|---|
+| `KEYCLOAK_URL` | Keycloak server URL | `http://localhost:8080` |
+| `KEYCLOAK_REALM` | Keycloak realm name | `cerebralstratum` |
+| `KEYCLOAK_CLIENT_ID` | Keycloak public client ID | `cerebralstratum-frontend` |
+| `BACKEND_API` | Backend REST API base URL | `http://localhost:6443` |
+| `MAPBOX_ACCESS_TOKEN` | Mapbox GL JS access token | _(empty)_ |
+
+### Production build
+
+```bash
+./gradlew :shared:jsBrowserDevelopmentLibraryDistribution
+cd webApp && npm run build
+# Output: webApp/dist/
+```
+
+## Android
+
+```bash
+./gradlew :composeApp:assembleDebug
+```
+
+## Desktop (JVM)
+
+```bash
+./gradlew :composeApp:run
+```
+
+## iOS
+
+Open `iosApp/` in Xcode and run from the IDE.
+
+## Tests
+
+```bash
+./gradlew test
+```
+
+Test sources: `shared/src/commonTest/`, `composeApp/src/commonTest/`.
