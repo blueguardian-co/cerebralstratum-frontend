@@ -1,65 +1,75 @@
-Monorepo: Next.js UI + Kotlin Multiplatform shared code.
+This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM).
 
-This repository contains a Next.js web UI and a Kotlin Multiplatform (KMP) module under shared/ for cross‑platform business logic shared by Web, Android, iOS, and Desktop (JVM).
+* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
+  It contains several subfolders:
+  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
+  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
+    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
+    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
+    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
+    folder is the appropriate location.
 
-## Getting Started
+* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
+  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
 
-First, run the development server:
+* [/shared](./shared/src) is for the code that will be shared between all targets in the project.
+  The most important subfolder is [commonMain](./shared/src/commonMain/kotlin). If preferred, you
+  can add code to the platform-specific folders here too.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+* [/webApp](./webApp) contains web React application. It uses the Kotlin/JS library produced
+  by the [shared](./shared) module.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Build and Run Android Application
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To build and run the development version of the Android app, use the run configuration from the run widget
+in your IDE’s toolbar or build it directly from the terminal:
+- on macOS/Linux
+  ```shell
+  ./gradlew :composeApp:assembleDebug
+  ```
+- on Windows
+  ```shell
+  .\gradlew.bat :composeApp:assembleDebug
+  ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Build and Run Desktop (JVM) Application
 
-## Kotlin Multiplatform module (shared/)
+To build and run the development version of the desktop app, use the run configuration from the run widget
+in your IDE’s toolbar or run it directly from the terminal:
+- on macOS/Linux
+  ```shell
+  ./gradlew :composeApp:run
+  ```
+- on Windows
+  ```shell
+  .\gradlew.bat :composeApp:run
+  ```
 
-Build all targets:
+### Build and Run Web Application
 
-```bash
-./gradlew :shared:build
-```
+To build and run the development version of the web app, use the run configuration from the run widget
+in your IDE’s toolbar or run it directly from the terminal:
+1. Install [Node.js](https://nodejs.org/en/download) (which includes `npm`)
+2. Build Kotlin/JS shared code:
+   - on macOS/Linux
+     ```shell
+     ./gradlew :shared:jsBrowserDevelopmentLibraryDistribution
+     ```
+   - on Windows
+     ```shell
+     .\gradlew.bat :shared:jsBrowserDevelopmentLibraryDistribution
+     ```
+3. Build and run the web application
+   ```shell
+   npm install
+   npm run start
+   ```
 
-Example common API defined in shared/src/commonMain:
-- function: com.cerebralstratum.shared.greeting(AppInfo)
+### Build and Run iOS Application
 
-JS target produces a library artifact (IR). Initial integration plan with Next.js:
-1. Build JS library: `./gradlew :shared:jsBrowserProductionLibraryDistribution` (or `:shared:build`).
-2. Consume artifact in Next.js via a local package step (to be set up next), or through a simple wrapper published to an internal registry.
+To build and run the development version of the iOS app, use the run configuration from the run widget
+in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
 
-Android and iOS targets build a library/framework that native apps can consume. Desktop can be added later as a JVM target if needed.
+---
 
-## Architecture Decision Records
-- ADR-0001 — Web Stack Decision: keep Next.js for Web UI initially while using KMP for shared logic. See Writerside: Writerside/topics/adrs/0001-web-stack-decision.md.
-- ADR-0002 — Kotlin Multiplatform Migration Plan: phased plan to deliver Web (Kotlin/Wasm), Desktop (JVM), iOS, Android, and decommission Next.js after cutover. See Writerside: Writerside/topics/adrs/0002-kmp-migration-plan.md.
-
-## Documentation
-Writerside is the canonical documentation source for this repository. The site is published to GitHub Pages:
-- https://cerebralstratum-frontend.github.io
-
-Edit docs under Writerside/. Writerside should also output llms.txt as part of the build.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…

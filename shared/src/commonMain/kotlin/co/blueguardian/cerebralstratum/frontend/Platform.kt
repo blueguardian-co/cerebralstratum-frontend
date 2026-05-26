@@ -1,0 +1,7 @@
+package co.blueguardian.cerebralstratum.frontend
+
+interface Platform {
+    val name: String
+}
+
+expect fun getPlatform(): Platform

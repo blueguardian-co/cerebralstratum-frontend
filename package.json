@@ -1,39 +1,13 @@
 {
-  "name": "cerebralstratum-frontend",
-  "version": "0.1.0",
+  "name": "CEREBRAL STRATUM - Frontend",
+  "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "webApp",
+    "shared/build/dist/js/developmentLibrary"
+  ],
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "kmp:build": "./gradlew :shared:build",
-    "kmp:js": "./gradlew :shared:jsBrowserProductionLibraryDistribution"
-  },
-  "dependencies": {
-    "@patternfly/react-core": "^6.1.0",
-    "@patternfly/react-icons": "^6.1.0",
-    "@patternfly/react-styles": "^6.1.0",
-    "@types/geojson": "^7946.0.16",
-    "@types/uuid": "^10.0.0",
-    "axios": "^1.8.2",
-    "eventsource": "^3.0.5",
-    "jwt-decode": "^4.0.0",
-    "keycloak-js": "^26.2.0",
-    "mapbox-gl": "^3.10.0",
-    "next": "^15.2.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@keycloak/keycloak-admin-client": "^26.1.4",
-    "@types/node": "^22",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.2.2",
-    "postcss": "^8",
-    "typescript": "^5"
+    "build": "cd webApp && npm run build",
+    "start": "cd webApp && npm run start"
   }
 }
