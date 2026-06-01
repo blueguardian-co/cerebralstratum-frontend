@@ -2,6 +2,7 @@
 .idea
 # dependencies
 /node_modules
+webApp/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -42,6 +43,7 @@ next-env.d.ts
 
 # Kotlin Multiplatform specific
 .gradle/
+.kotlin/
 **/build/
 local.properties
 
