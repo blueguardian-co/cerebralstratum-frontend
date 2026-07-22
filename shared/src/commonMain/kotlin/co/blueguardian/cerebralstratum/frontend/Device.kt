@@ -23,5 +23,8 @@ data class Device(
     val keycloak_user_id: String,
     val keycloak_org_id: String?,
     val image_path: String?,
-    val status: DeviceStatus
+    // Nullable: a device that has registered but never reported telemetry
+    // has no status yet — matches the backend's DeviceEntity.status column,
+    // which has no NOT NULL constraint.
+    val status: DeviceStatus?
 )

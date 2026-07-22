@@ -1,0 +1,8 @@
+.cs-map-container {
+  position: absolute;
+  inset: 0;
+}
+
+.cs-map-loading {
+  background: var(--cs-page);
+}

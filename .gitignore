@@ -20,6 +20,7 @@ webApp/node_modules/
 
 # production
 /build
+webApp/dist/
 
 # misc
 .DS_Store
@@ -33,6 +34,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+
+# runtime env config populated with real local-dev values (ADR-0006);
+# only the ${VAR} template belongs in git
+webApp/public/env.js
 
 # vercel
 .vercel
