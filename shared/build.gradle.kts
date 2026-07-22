@@ -52,10 +52,8 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.android)
         }
-        val iosMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.darwin)
-            }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.jvm)

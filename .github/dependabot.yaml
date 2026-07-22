@@ -1,8 +1,59 @@
 ---
 version: 2
 updates:
+  # npm workspace — root package.json picks up webApp/ workspace
   - package-ecosystem: "npm"
     directory: "/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
     schedule:
       interval: "weekly"
+      day: "monday"
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+      vite:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
+
+  # Gradle — Kotlin Multiplatform (versions centralised in gradle/libs.versions.toml)
+  - package-ecosystem: "gradle"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin*"
+      compose-multiplatform:
+        patterns:
+          - "org.jetbrains.compose*"
+      androidx:
+        patterns:
+          - "androidx.*"
+      ktor:
+        patterns:
+          - "io.ktor*"
+      kotlinx:
+        patterns:
+          - "org.jetbrains.kotlinx*"
+      agp:
+        patterns:
+          - "com.android.*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+      day: "monday"
