@@ -11,8 +11,8 @@
     "eventsource": "^3.0.5",
     "keycloak-js": "^26.2.4",
     "mapbox-gl": "^3.10.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "shared": "0.0.0-unspecified"
   },
   "devDependencies": {
