@@ -8,5 +8,5 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
   },
-  server: { port: 8080, host: true },
+  server: { port: 8080, host: true, allowedHosts: ["trueward.amp.blueguardian.co"] },
 });

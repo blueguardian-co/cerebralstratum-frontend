@@ -20,20 +20,13 @@ interface LocationEventPayload {
   coordinates: unknown;
 }
 
-// The SSE endpoint serializes the already-built `LocationMessage` Java object,
-// whose `coordinates` field is a JTS `Point` with no custom serializer for
-// this direction — Jackson's default bean serialization most likely produces
-// `{x, y}` (x=longitude, y=latitude, per LocationMessageDeserializer's own
-// `new Coordinate(longitude, latitude)`). Accept a plain `[lng, lat]` array
-// too since this hasn't been verified against a real payload yet.
+// Backend's PointSerializer writes [point.getY(), point.getX(), altitude?] —
+// i.e. [latitude, longitude], not GeoJSON's [longitude, latitude] convention.
+// Confirmed against a live SSE payload.
 function extractLngLat(coordinates: unknown): [number, number] | null {
   if (Array.isArray(coordinates) && coordinates.length >= 2) {
-    const [lng, lat] = coordinates;
-    if (typeof lng === 'number' && typeof lat === 'number') return [lng, lat];
-  }
-  if (coordinates && typeof coordinates === 'object') {
-    const { x, y } = coordinates as { x?: unknown; y?: unknown };
-    if (typeof x === 'number' && typeof y === 'number') return [x, y];
+    const [lat, lng] = coordinates;
+    if (typeof lat === 'number' && typeof lng === 'number') return [lng, lat];
   }
   console.warn('Map: unrecognised location coordinates shape', coordinates);
   return null;
@@ -60,6 +53,16 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
   useEffect(() => {
     selectedDeviceIdRef.current = selectedDeviceId;
   }, [selectedDeviceId]);
+
+  // Read the live token at fetch-time instead of closing over it, so a
+  // silent OIDC refresh (AuthProvider re-runs kc.updateToken every 30s)
+  // doesn't retrigger the EventSource-creation effect below and tear down
+  // every open connection + wipe all markers just because the token string
+  // changed.
+  const tokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
 
   // Mount the map once.
   useEffect(() => {
@@ -122,14 +125,14 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
 
   // Live per-device location markers.
   useEffect(() => {
-    if (!map || !isAuthenticated || !token) return;
+    if (!map || !isAuthenticated || !tokenRef.current) return;
 
     const sources = devices.map((device) => {
       const source = new EventSource(`${config.backendApi}/api/v1/devices/by-id/${device.uuid}/location`, {
         fetch: (url, init) =>
           fetch(url, {
             ...init,
-            headers: { ...init.headers, Authorization: `Bearer ${token}` },
+            headers: { ...init.headers, Authorization: `Bearer ${tokenRef.current}` },
           }),
       });
 
@@ -160,7 +163,10 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
       Object.values(markersRef.current).forEach((marker) => marker.remove());
       markersRef.current = {};
     };
-  }, [map, devices, isAuthenticated, token]);
+    // token intentionally excluded — read via tokenRef so a silent refresh
+    // doesn't tear down every open EventSource connection (see tokenRef above).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, devices, isAuthenticated]);
 
   // Focus the map on a device as soon as it's selected, if its location is
   // already known.
