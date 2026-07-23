@@ -53,3 +53,7 @@ Rationale:
 - Google Maps dependency (`@vis.gl/react-google-maps`) is not carried forward.
 - If MapLibre is adopted later: replace `mapbox-gl` import with `maplibre-gl`; style URL syntax differs slightly; most component code is unchanged.
 - Mapbox access token must be provisioned per deployment environment.
+
+## Forward Pointers
+
+- CSPROD-182: once the backend SSE stream was actually delivering live location data end-to-end (see `cerebralstratum-backend` ADR-0010), the marker-update pattern described above had two bugs that meant markers never rendered — a `[lng, lat]`/`[lat, lon]` coordinate-order mismatch, and the location-EventSource effect depending on the raw auth token (which `AuthProvider` silently refreshes every ~30s), tearing down every connection and wiping all markers on each refresh. Both fixed in `Map.tsx`; the `mapboxgl.Marker`-keyed-by-device-UUID pattern itself is unchanged.
