@@ -54,6 +54,10 @@ npm run start        # dev server at http://localhost:8080
 npm run build        # production build
 ```
 
+**Before first run:** `webApp/public/env.js` must exist with real local values (Keycloak URL/realm/client ID, backend API origin, Mapbox token) — it's gitignored (ADR-0006, runtime env injection) and there's no committed template, so a fresh clone has no config until this file is created. Without it, `config.ts`'s fallbacks (`http://localhost:8080` etc.) silently apply instead of failing loudly.
+
+`vite.config.ts`'s `server.allowedHosts` only lists whatever hostname the dev server has actually been reached through so far (e.g. a tunnel hostname for testing from another device) — Vite 6+ rejects requests with an unlisted `Host` header. Add any new hostname there and restart the dev server (config file changes aren't hot-reloaded).
+
 ### Android
 ```bash
 ./gradlew :composeApp:assembleDebug
