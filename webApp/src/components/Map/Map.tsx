@@ -42,11 +42,60 @@ interface MapProps {
 // the user is already closer than this.
 const FOCUS_ZOOM = 15;
 
+// How long a marker takes to glide to a newly-received location, instead of
+// teleporting there instantly.
+const MARKER_ANIMATION_MS = 800;
+
+// Fraction of the viewport, measured in from each edge, that counts as the
+// "margin" — once a selected device's marker enters this margin, the camera
+// recentres. Keeps the view still while the marker is well within frame,
+// rather than re-centring on every single location update.
+const EDGE_MARGIN_RATIO = 0.2;
+
+// Whether `lngLat` falls within the edge margin of the map's current
+// viewport (or outside it entirely).
+function isNearViewportEdge(map: mapboxgl.Map, lngLat: [number, number]): boolean {
+  const point = map.project(lngLat);
+  const canvas = map.getCanvas();
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const marginX = width * EDGE_MARGIN_RATIO;
+  const marginY = height * EDGE_MARGIN_RATIO;
+  return point.x < marginX || point.x > width - marginX || point.y < marginY || point.y > height - marginY;
+}
+
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+// Animates a marker from its current position to `to` over `duration` ms.
+// Returns a cancel function so a fresh update can interrupt an in-flight
+// animation without fighting over the marker's position.
+function animateMarkerTo(marker: mapboxgl.Marker, to: [number, number], duration: number): () => void {
+  const from = marker.getLngLat();
+  const fromLngLat: [number, number] = [from.lng, from.lat];
+  const start = performance.now();
+  let frameId: number;
+
+  const step = (now: number) => {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = easeInOutCubic(t);
+    marker.setLngLat([
+      fromLngLat[0] + (to[0] - fromLngLat[0]) * eased,
+      fromLngLat[1] + (to[1] - fromLngLat[1]) * eased,
+    ]);
+    if (t < 1) frameId = requestAnimationFrame(step);
+  };
+  frameId = requestAnimationFrame(step);
+  return () => cancelAnimationFrame(frameId);
+}
+
 export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const navControlAddedRef = useRef(false);
   const markersRef = useRef<Record<string, mapboxgl.Marker>>({});
+  const markerAnimationsRef = useRef<Record<string, () => void>>({});
   const selectedDeviceIdRef = useRef<string | null>(null);
   const { isAuthenticated, token } = useAuth();
 
@@ -118,7 +167,10 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
     map.setCenter(DEFAULT_CENTER);
     map.setZoom(DEFAULT_ZOOM);
     if (!navControlAddedRef.current) {
-      map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      // Compass only — zoom is already covered by the custom cs-map-controls
+      // cluster (bottom-right), which is also where this docks (see Map.css)
+      // to stay clear of the top ribbon.
+      map.addControl(new mapboxgl.NavigationControl({ showZoom: false, showCompass: true }), 'bottom-right');
       navControlAddedRef.current = true;
     }
   }, [map, isAuthenticated]);
@@ -143,15 +195,22 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
 
         const existing = markersRef.current[device.uuid];
         if (existing) {
-          existing.setLngLat(lngLat);
+          markerAnimationsRef.current[device.uuid]?.();
+          markerAnimationsRef.current[device.uuid] = animateMarkerTo(existing, lngLat, MARKER_ANIMATION_MS);
         } else {
           markersRef.current[device.uuid] = new mapboxgl.Marker().setLngLat(lngLat).addTo(map);
         }
 
-        // Device was already selected before its first location update
-        // arrived — focus it now rather than waiting for a re-selection.
+        // Only recentre a selected device's camera once its marker nears the
+        // edge of the current viewport — otherwise the view stays put while
+        // the marker glides around inside it. Zoom is left alone here; the
+        // selection-change effect below owns the initial focus-in.
         if (device.uuid === selectedDeviceIdRef.current) {
-          map.flyTo({ center: lngLat, zoom: Math.max(map.getZoom(), FOCUS_ZOOM) });
+          if (!existing) {
+            map.flyTo({ center: lngLat, zoom: Math.max(map.getZoom(), FOCUS_ZOOM) });
+          } else if (isNearViewportEdge(map, lngLat)) {
+            map.easeTo({ center: lngLat, duration: MARKER_ANIMATION_MS });
+          }
         }
       };
 
@@ -160,6 +219,8 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
 
     return () => {
       sources.forEach((source) => source.close());
+      Object.values(markerAnimationsRef.current).forEach((cancel) => cancel());
+      markerAnimationsRef.current = {};
       Object.values(markersRef.current).forEach((marker) => marker.remove());
       markersRef.current = {};
     };

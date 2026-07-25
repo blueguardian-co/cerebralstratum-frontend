@@ -6,3 +6,15 @@
 .cs-map-loading {
   background: var(--cs-page);
 }
+
+/* Dock the compass control above the custom zoom/recenter cluster
+   (Dashboard.css .cs-map-controls: 16px inset, 136px tall) instead of
+   Mapbox's default top-right, which the masthead ribbon covers. */
+.cs-map-container .mapboxgl-ctrl-bottom-right {
+  right: 16px;
+  bottom: 162px;
+}
+
+.cs-map-container .mapboxgl-ctrl-bottom-right .mapboxgl-ctrl {
+  margin: 0;
+}
