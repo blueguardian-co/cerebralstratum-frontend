@@ -10,7 +10,7 @@ permissions:
   pages: write
 env:
   INSTANCE: 'Writerside/cs-f'
-  DOCKER_VERSION: '2025.03.8312'
+  DOCKER_VERSION: '2026.06.8817'
 jobs:
   build:
     runs-on: ubuntu-latest
