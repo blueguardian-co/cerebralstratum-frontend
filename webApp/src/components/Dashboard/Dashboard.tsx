@@ -95,23 +95,26 @@ function getInitialThemeMode(): ThemeMode {
   return 'system';
 }
 
-// Unlike a one-time `matchMedia(...).matches` read at load, this tracks OS
-// theme changes live via the media query's `change` event, so "System" mode
-// actually follows the OS instead of just seeding an initial value.
-function useSystemPrefersDark(): boolean {
-  const [prefersDark, setPrefersDark] = useState(
-    () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
-  );
+// Unlike a one-time `matchMedia(...).matches` read at load, this tracks the
+// query's match state live via its `change` event — used for both OS theme
+// ("System" mode following the OS) and the mobile-layout breakpoint below.
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() => window.matchMedia?.(query).matches ?? false);
 
   useEffect(() => {
-    const mql = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = (e: MediaQueryListEvent) => setPrefersDark(e.matches);
+    const mql = window.matchMedia(query);
+    const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
     mql.addEventListener('change', onChange);
     return () => mql.removeEventListener('change', onChange);
-  }, []);
+  }, [query]);
 
-  return prefersDark;
+  return matches;
 }
+
+// Mirrors the `@media (max-width: 720px)` breakpoint in Dashboard.css — keep
+// the two values in sync. Below this width the device list moves from a
+// permanent sidebar into a masthead-anchored dropdown drawer.
+const MOBILE_QUERY = '(max-width: 720px)';
 
 function matchesQuery(device: Device, query: string): boolean {
   const haystack = `${device.name ?? ''} ${device.description ?? ''} ${device.uuid}`.toLowerCase();
@@ -124,13 +127,15 @@ export function Dashboard() {
   const { devices, isLoading, error } = useDevices();
   const { isAuthenticated, user, login, logout } = useAuth();
   const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialThemeMode);
-  const systemPrefersDark = useSystemPrefersDark();
+  const systemPrefersDark = useMediaQuery('(prefers-color-scheme: dark)');
   const theme: ThemeName = themeMode === 'system' ? (systemPrefersDark ? 'dark' : 'light') : themeMode;
+  const isMobile = useMediaQuery(MOBILE_QUERY);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [focusedDeviceId, setFocusedDeviceId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [panelCollapsed, setPanelCollapsed] = useState(false);
+  const [devicesMenuOpen, setDevicesMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   // No notification API is wired up yet — this stays empty until there's a
@@ -156,6 +161,12 @@ export function Dashboard() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [accountMenuOpen, notificationsOpen]);
 
+  // The desktop sidebar is always visible, so a drawer left open from a
+  // previous mobile width shouldn't reappear if the viewport widens back out.
+  useEffect(() => {
+    if (!isMobile) setDevicesMenuOpen(false);
+  }, [isMobile]);
+
   const C = THEME_COLORS[theme];
 
   const counts = useMemo(() => {
@@ -177,6 +188,11 @@ export function Dashboard() {
   const toggleExpandAll = () => {
     setExpandedIds(allExpanded ? new Set() : new Set(filteredDevices.map((d) => d.uuid)));
   };
+
+  // On mobile the panel only exists while the drawer is open (devicesMenuOpen
+  // already gates whether it renders at all), so its list is always visible;
+  // on desktop the list follows the sidebar's own minimise toggle.
+  const devicesListVisible = isMobile || !panelCollapsed;
 
   const rootStyle: ThemeVars = {
     '--cs-brand': C.brand,
@@ -206,6 +222,7 @@ export function Dashboard() {
       </Suspense>
 
       {/* ============ TOP RIBBON ============ */}
+      <div className="cs-ribbon-wrap">
       <header className="cs-ribbon">
         <div className="cs-ribbon-brand">
           <img src={logoSrc} alt="TrueWard" className="cs-ribbon-logo" />
@@ -252,6 +269,22 @@ export function Dashboard() {
         <div className="cs-ribbon-spacer" />
 
         <div className="cs-ribbon-actions">
+          {isAuthenticated && isMobile && (
+            <button
+              className={`cs-devices-toggle${devicesMenuOpen ? ' cs-devices-toggle-active' : ''}`}
+              title="Devices"
+              onClick={() => {
+                setDevicesMenuOpen((o) => !o);
+                setAccountMenuOpen(false);
+                setNotificationsOpen(false);
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+                <path d={DEVICE_ICON_PATH} />
+              </svg>
+              {devices.length > 0 && <span className="cs-devices-toggle-count">{devices.length}</span>}
+            </button>
+          )}
           {!isAuthenticated ? (
             <button className="cs-signin-btn" onClick={login}>
               Sign in
@@ -264,6 +297,7 @@ export function Dashboard() {
                 onClick={() => {
                   setAccountMenuOpen((o) => !o);
                   setNotificationsOpen(false);
+                  setDevicesMenuOpen(false);
                 }}
               >
                 {initials ?? (
@@ -335,8 +369,13 @@ export function Dashboard() {
       </header>
 
       {/* ============ DEVICE LIST PANEL ============ */}
-      {isAuthenticated && (
-      <aside className={`cs-panel${panelCollapsed ? ' cs-panel-collapsed' : ''}`}>
+      {/* Desktop: permanent sidebar, collapsible via panelCollapsed. Mobile:
+          only rendered while devicesMenuOpen, as a dropdown drawer hanging
+          off the masthead — reusing devicesListVisible instead of a second
+          collapsed state, since "closed" and "collapsed" are the same thing
+          on mobile. */}
+      {isAuthenticated && (!isMobile || devicesMenuOpen) && (
+      <aside className={`cs-panel${isMobile ? ' cs-panel-drawer' : panelCollapsed ? ' cs-panel-collapsed' : ''}`}>
         <div className="cs-panel-header">
           <div>
             <div className="cs-panel-title">Devices</div>
@@ -345,32 +384,38 @@ export function Dashboard() {
             </div>
           </div>
           <div className="cs-panel-header-actions">
-            {!panelCollapsed && filteredDevices.length > 0 && (
+            {devicesListVisible && filteredDevices.length > 0 && (
               <button className="cs-panel-expand-all" onClick={toggleExpandAll}>
                 {allExpanded ? 'Collapse all' : 'Expand all'}
               </button>
             )}
             <button
-              onClick={() => setPanelCollapsed((c) => !c)}
-              title={panelCollapsed ? 'Expand devices' : 'Minimise'}
+              onClick={() => (isMobile ? setDevicesMenuOpen(false) : setPanelCollapsed((c) => !c))}
+              title={isMobile ? 'Close devices' : panelCollapsed ? 'Expand devices' : 'Minimise'}
               className="cs-panel-toggle"
             >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.2}
-                style={{ transform: `rotate(${panelCollapsed ? 180 : 0}deg)`, transition: 'transform .2s ease' }}
-              >
-                <path d="m6 15 6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              {isMobile ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                  <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+                </svg>
+              ) : (
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.2}
+                  style={{ transform: `rotate(${panelCollapsed ? 180 : 0}deg)`, transition: 'transform .2s ease' }}
+                >
+                  <path d="m6 15 6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
 
-        {!panelCollapsed && (
+        {devicesListVisible && (
           <div className="cs-panel-list">
             {isLoading && <p className="cs-panel-status">Loading devices…</p>}
             {!isLoading && error && (
@@ -475,6 +520,7 @@ export function Dashboard() {
         )}
       </aside>
       )}
+      </div>
 
       {/* ============ MAP CONTROLS (bottom-right) ============ */}
       <div className="cs-map-controls">

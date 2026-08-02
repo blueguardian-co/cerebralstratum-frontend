@@ -8,7 +8,14 @@
 .cs-dashboard {
   position: relative;
   width: 100%;
+  /* 100vh on mobile Safari includes the area still covered by the
+     toolbar/tab-bar chrome, so it renders taller than what's actually
+     visible — the ribbon, devices panel, and map controls (all sized or
+     anchored off this height) end up partly pushed below the fold. 100dvh
+     tracks the real visible viewport as that chrome shows/hides; the vh
+     line above it is a fallback for browsers without dvh support. */
   height: 100vh;
+  height: 100dvh;
   min-height: 640px;
   overflow: hidden;
   background: var(--cs-page);
@@ -18,15 +25,32 @@
 
 /* ============ TOP RIBBON ============ */
 
-.cs-ribbon {
+/* Positions the ribbon and (when open) the mobile devices drawer as a single
+   column: absolute against the viewport, everything below in normal flow so
+   the drawer sits flush under the ribbon at whatever height it wraps to.
+   Transparent and non-interactive itself — pointer-events re-enabled per
+   child — so it doesn't block map drags in the empty space around them. */
+.cs-ribbon-wrap {
   position: absolute;
   top: 16px;
   left: 16px;
   right: 16px;
-  min-height: 62px;
+  bottom: 16px;
   z-index: 40;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.cs-ribbon-wrap > * {
+  pointer-events: auto;
+}
+
+.cs-ribbon {
+  flex: 0 0 auto;
+  min-height: 62px;
+  display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 10px 18px;
   padding: 13px 16px 13px 18px;
@@ -106,7 +130,7 @@
   align-items: center;
   gap: 8px;
   flex: 0 1 auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .cs-chip {
@@ -167,6 +191,45 @@
   font-size: 12.5px;
   cursor: pointer;
   flex: 0 0 auto;
+}
+
+.cs-devices-toggle {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--cs-hairline);
+  background: var(--cs-sel);
+  color: var(--cs-sub);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.cs-devices-toggle-active {
+  background: var(--cs-brand);
+  color: #06222b;
+  border-color: transparent;
+}
+
+.cs-devices-toggle-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--cs-accent);
+  color: #06222b;
+  font-size: 9.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--cs-panel-solid);
 }
 
 .cs-account {
@@ -307,12 +370,11 @@
 /* ============ DEVICE LIST PANEL ============ */
 
 .cs-panel {
-  position: absolute;
-  top: 94px;
-  left: 16px;
+  margin-top: 16px;
   width: 340px;
-  bottom: 16px;
-  z-index: 30;
+  align-self: flex-start;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--cs-panel);
@@ -325,7 +387,17 @@
 }
 
 .cs-panel-collapsed {
-  bottom: auto;
+  flex: 0 0 auto;
+}
+
+/* Mobile: the panel becomes a dropdown drawer hanging off the masthead
+   instead of a full-height sidebar — capped height with its own scroll,
+   so it never covers most of the viewport like the old fixed sidebar did. */
+.cs-panel-drawer {
+  width: 100%;
+  align-self: stretch;
+  flex: 0 0 auto;
+  max-height: min(65vh, 520px);
 }
 
 .cs-panel-header {
@@ -643,11 +715,42 @@
 }
 
 /* ============ COMPACT RIBBON ============ */
-/* Search + avatar are the priority elements at narrow widths — filter chips
-   are the least essential ribbon content, so they're the first to go rather
-   than wrapping onto a second row and breaking out of the ribbon's frame. */
-@media (max-width: 720px) {
+/* Logo, search, and avatar are the priority elements — the ribbon never
+   wraps to a second row (see flex-wrap: nowrap above), so the filter chips,
+   as the least essential content, are hidden instead once they no longer
+   fit alongside those. 960px is the measured point where the chips start
+   crowding the rest of the ribbon at its natural size, with some headroom;
+   it's intentionally wider than MOBILE_QUERY in Dashboard.tsx (720px, which
+   switches the devices panel from a permanent sidebar to a drawer) since
+   chips need to go before that narrower breakpoint is ever reached. */
+@media (max-width: 960px) {
   .cs-chips {
     display: none;
+  }
+}
+
+/* Below ~480px even the chip-less ribbon (logo + wordmark + search + avatar,
+   search already shrunk to its 140px floor) no longer fits in one row at its
+   natural width — the wordmark is the next least essential piece, so it's
+   dropped down to just the logo mark, and the search floor + ribbon gaps
+   tighten further to reclaim the rest. Search and the avatar stay untouched
+   as the two elements that must never be hidden. */
+@media (max-width: 480px) {
+  .cs-ribbon {
+    gap: 10px 10px;
+    padding: 13px 10px 13px 12px;
+  }
+
+  .cs-ribbon-brand {
+    gap: 0;
+    padding-right: 10px;
+  }
+
+  .cs-ribbon-brand-text {
+    display: none;
+  }
+
+  .cs-search {
+    min-width: 110px;
   }
 }
