@@ -560,10 +560,16 @@
   flex: 0 0 auto;
 }
 
+.cs-row-status-battery {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+
 .cs-row-meta-line {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 9px;
   margin-top: 4px;
   font-size: 11.5px;
@@ -577,8 +583,30 @@
 }
 
 .cs-row-battery {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
   font-weight: 700;
   flex: 0 0 auto;
+}
+
+.cs-battery-icon {
+  flex: 0 0 auto;
+}
+
+.cs-battery-icon-low {
+  animation: cs-battery-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes cs-battery-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 .cs-battery-good {
@@ -619,37 +647,6 @@
   color: var(--cs-text);
   font-weight: 600;
   line-height: 1.35;
-}
-
-.cs-row-stat {
-  padding: 9px 11px;
-  border-radius: 10px;
-  background: var(--cs-panel-solid);
-  border: 1px solid var(--cs-hairline);
-  display: inline-block;
-}
-
-.cs-row-stat-label {
-  font-size: 9.5px;
-  color: var(--cs-sub);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  font-weight: 700;
-}
-
-.cs-row-stat-value {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--cs-text);
-  margin-top: 3px;
-}
-
-.cs-row-stat-unit {
-  font-size: 10px;
-  color: var(--cs-sub);
-  font-weight: 400;
-  margin-left: 3px;
 }
 
 .cs-row-summary {

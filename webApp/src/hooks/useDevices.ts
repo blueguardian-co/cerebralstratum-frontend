@@ -95,6 +95,39 @@ export function useDevices(): UseDevicesResult {
   // removed.
   const deviceIds = devices.map((d) => d.uuid).join(',');
 
+  // Stop-gap for the delay between mount and the first SSE status message
+  // (the EventSource below only opens once `deviceIds` is known, then still
+  // has to wait for the backend to push): seed each device's status once
+  // from the last-known value over REST, so the panel doesn't sit on
+  // "Offline"/no battery for a few seconds on every page load. Guarded by
+  // `d.status == null` in the setDevices updater so a status that already
+  // arrived (via this same fetch or a fast SSE message) is never clobbered
+  // with a stale REST response.
+  useEffect(() => {
+    if (!isAuthenticated || !deviceIds) return;
+    let cancelled = false;
+
+    deviceIds.split(',').forEach((uuid) => {
+      apiClient
+        .getLatestDeviceStatus(uuid)
+        .then((status) => {
+          if (cancelled || status == null) return;
+          setDevices((prev) =>
+            prev.map((d) =>
+              d.uuid === uuid && d.status == null
+                ? new Device(d.uuid, d.name, d.description, d.keycloak_user_id, d.keycloak_org_id, d.image_path, status)
+                : d
+            )
+          );
+        })
+        .catch(() => {});
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, deviceIds]);
+
   useEffect(() => {
     if (!isAuthenticated || !deviceIds) return;
 

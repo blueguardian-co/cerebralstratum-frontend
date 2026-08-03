@@ -96,6 +96,28 @@ function formatBattery(battery: number): string {
   return `${Math.round(battery)}`;
 }
 
+// Inner fill area of the battery glyph spans x=2.75..17.25 (14.5 wide).
+const BATTERY_ICON_FILL_WIDTH = 14.5;
+
+function BatteryIcon({ battery }: { battery: number | null | undefined }) {
+  const cls = batteryClass(battery);
+  const level = battery == null ? null : Math.max(0, Math.min(100, battery));
+  const fillWidth = level == null ? 0 : level === 0 ? 0 : Math.max(1.5, (level / 100) * BATTERY_ICON_FILL_WIDTH);
+  return (
+    <svg
+      width="17"
+      height="10"
+      viewBox="0 0 22 12"
+      className={`cs-battery-icon ${cls} ${cls === 'cs-battery-low' ? 'cs-battery-icon-low' : ''}`}
+      aria-hidden="true"
+    >
+      <rect x="0.75" y="0.75" width="18.5" height="10.5" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="20" y="3.5" width="2" height="5" rx="1" fill="currentColor" />
+      {level != null && <rect x="2.75" y="2.75" width={fillWidth} height="6.5" rx="1" fill="currentColor" />}
+    </svg>
+  );
+}
+
 function getInitialThemeMode(): ThemeMode {
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
   if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
@@ -470,15 +492,18 @@ export function Dashboard() {
                       <div className="cs-row-info">
                         <div className="cs-row-title-line">
                           <span className="cs-row-name">{device.name ?? device.uuid}</span>
-                          <span className="cs-row-status-label" style={{ color: meta.color }}>
-                            {meta.label}
+                          <span className="cs-row-status-battery">
+                            <span className="cs-row-status-label" style={{ color: meta.color }}>
+                              {meta.label}
+                            </span>
+                            <span className={`cs-row-battery ${batteryClass(device.status?.battery)}`}>
+                              <BatteryIcon battery={device.status?.battery} />
+                              {device.status?.battery != null ? `${formatBattery(device.status.battery)}%` : '—'}
+                            </span>
                           </span>
                         </div>
                         <div className="cs-row-meta-line">
                           <span className="cs-row-desc">{device.description || 'Device'}</span>
-                          <span className={`cs-row-battery ${batteryClass(device.status?.battery)}`}>
-                            {device.status?.battery != null ? `${formatBattery(device.status.battery)}%` : '—'}
-                          </span>
                         </div>
                       </div>
                       <svg
@@ -505,13 +530,6 @@ export function Dashboard() {
                             <span>{device.status?.summary}</span>
                           </div>
                         )}
-                        <div className="cs-row-stat">
-                          <div className="cs-row-stat-label">Battery</div>
-                          <div className="cs-row-stat-value">
-                            {device.status?.battery != null ? formatBattery(device.status.battery) : '—'}
-                            {device.status?.battery != null && <span className="cs-row-stat-unit">%</span>}
-                          </div>
-                        </div>
                         {bucket !== 'alert' && device.status?.summary && (
                           <p className="cs-row-summary">{device.status.summary}</p>
                         )}

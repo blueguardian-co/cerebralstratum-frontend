@@ -29,6 +29,24 @@ class ApiClient(
         }.body()
     }
 
+    // Stop-gap for the delay between initial page load and the first SSE
+    // status message: seeds a device's status from the last known value
+    // instead of leaving it null (rendered as "Offline"/no battery) until
+    // the live stream catches up. Returns null on any failure, including a
+    // device that has never reported a status (404) — callers treat that
+    // the same as "no status yet".
+    suspend fun getLatestDeviceStatus(deviceUuid: String): DeviceStatus? {
+        return try {
+            client.get("$baseUrl/api/v1/devices/by-id/$deviceUuid/statuses/latest") {
+                authState.getToken()?.let {
+                    header("Authorization", "Bearer $it")
+                }
+            }.body()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     suspend fun getHealthCheck(): Boolean {
         return try {
             val response = client.get("$baseUrl/q/health") {

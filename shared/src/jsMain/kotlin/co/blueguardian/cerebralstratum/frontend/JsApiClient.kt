@@ -17,6 +17,11 @@ class JsApiClient(baseUrl: String, authState: JsAuthState) {
     }
 
     @OptIn(DelicateCoroutinesApi::class)
+    fun getLatestDeviceStatus(deviceUuid: String): kotlin.js.Promise<DeviceStatus?> = GlobalScope.promise {
+        apiClient.getLatestDeviceStatus(deviceUuid)
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
     fun getHealthCheck(): kotlin.js.Promise<Boolean> = GlobalScope.promise {
         apiClient.getHealthCheck()
     }
