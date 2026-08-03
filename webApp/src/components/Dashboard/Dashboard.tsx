@@ -89,6 +89,13 @@ function batteryClass(battery: number | null | undefined): string {
   return 'cs-battery-low';
 }
 
+// The backend reports battery as a float (e.g. 61.307835) despite
+// DeviceStatus.battery being declared Int on the Kotlin side — round for
+// display rather than showing raw decimal noise.
+function formatBattery(battery: number): string {
+  return `${Math.round(battery)}`;
+}
+
 function getInitialThemeMode(): ThemeMode {
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
   if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
@@ -470,7 +477,7 @@ export function Dashboard() {
                         <div className="cs-row-meta-line">
                           <span className="cs-row-desc">{device.description || 'Device'}</span>
                           <span className={`cs-row-battery ${batteryClass(device.status?.battery)}`}>
-                            {device.status?.battery != null ? `${device.status.battery}%` : '—'}
+                            {device.status?.battery != null ? `${formatBattery(device.status.battery)}%` : '—'}
                           </span>
                         </div>
                       </div>
@@ -501,7 +508,7 @@ export function Dashboard() {
                         <div className="cs-row-stat">
                           <div className="cs-row-stat-label">Battery</div>
                           <div className="cs-row-stat-value">
-                            {device.status?.battery ?? '—'}
+                            {device.status?.battery != null ? formatBattery(device.status.battery) : '—'}
                             {device.status?.battery != null && <span className="cs-row-stat-unit">%</span>}
                           </div>
                         </div>

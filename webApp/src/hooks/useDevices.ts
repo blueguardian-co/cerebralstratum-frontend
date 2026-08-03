@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { Device } from 'shared';
+import { EventSource } from 'eventsource';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Device } from 'shared';
+import type { DeviceStatus } from 'shared';
 import { apiClient } from '../api/client.ts';
+import { config } from '../config.ts';
 import { useAuth } from '../components/AuthProvider/AuthProvider.tsx';
 
 export interface UseDevicesResult {
@@ -24,7 +27,7 @@ export interface UseDevicesResult {
  * set.
  */
 export function useDevices(): UseDevicesResult {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, token } = useAuth();
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +76,67 @@ export function useDevices(): UseDevicesResult {
   }, [authLoading, isAuthenticated]);
 
   useEffect(() => fetchDevices(), [fetchDevices]);
+
+  // Read the live token at connect-time instead of closing over it, so a
+  // silent OIDC refresh (AuthProvider re-runs kc.updateToken every 30s)
+  // doesn't retrigger the EventSource-creation effect below — same pattern
+  // as the location EventSource in Map.tsx.
+  const tokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
+
+  // Live per-device status. Keyed on the device UUIDs joined into a string
+  // rather than the `devices` array itself: merging a status update into
+  // `devices` via setDevices produces a new array reference on every
+  // message, and depending on `devices` directly would tear down and
+  // reopen every connection in reaction to its own updates. The joined
+  // string is only unequal (by value) when a device is actually added or
+  // removed.
+  const deviceIds = devices.map((d) => d.uuid).join(',');
+
+  useEffect(() => {
+    if (!isAuthenticated || !deviceIds) return;
+
+    const sources = deviceIds.split(',').map((uuid) => {
+      const source = new EventSource(`${config.backendApi}/api/v1/devices/by-id/${uuid}/status`, {
+        fetch: (url, init) =>
+          fetch(url, {
+            ...init,
+            headers: { ...init.headers, Authorization: `Bearer ${tokenRef.current}` },
+          }),
+      });
+
+      source.onmessage = (event) => {
+        let status: DeviceStatus;
+        try {
+          status = JSON.parse(event.data) as DeviceStatus;
+        } catch {
+          console.warn('useDevices: unparseable status SSE payload', event.data);
+          return;
+        }
+        // Device is a Kotlin/JS data class exported as a real class (getters,
+        // no plain own-enumerable properties), so object-spread can't produce
+        // a well-typed copy — go through the constructor instead.
+        setDevices((prev) =>
+          prev.map((d) =>
+            d.uuid === uuid
+              ? new Device(d.uuid, d.name, d.description, d.keycloak_user_id, d.keycloak_org_id, d.image_path, status)
+              : d
+          )
+        );
+      };
+
+      return source;
+    });
+
+    return () => {
+      sources.forEach((source) => source.close());
+    };
+    // token intentionally excluded — read via tokenRef so a silent refresh
+    // doesn't tear down every open EventSource connection (see tokenRef above).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, deviceIds]);
 
   return { devices, isLoading, error, refetch: fetchDevices };
 }
