@@ -548,26 +548,28 @@ export function Dashboard() {
       </div>
 
       {/* ============ MAP CONTROLS (bottom-right) ============ */}
-      <div className="cs-map-controls">
-        <div className="cs-zoom-group">
-          <button className="cs-zoom-btn" onClick={() => mapInstance?.zoomIn()}>
-            +
-          </button>
-          <button className="cs-zoom-btn" onClick={() => mapInstance?.zoomOut()}>
-            −
+      {isAuthenticated && (
+        <div className="cs-map-controls">
+          <div className="cs-zoom-group">
+            <button className="cs-zoom-btn" onClick={() => mapInstance?.zoomIn()}>
+              +
+            </button>
+            <button className="cs-zoom-btn" onClick={() => mapInstance?.zoomOut()}>
+              −
+            </button>
+          </div>
+          <button
+            className="cs-locate-btn"
+            title="Recenter"
+            onClick={() => mapInstance?.flyTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+              <path d="M12 2v3M12 19v3M22 12h-3M5 12H2" />
+              <path d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
+            </svg>
           </button>
         </div>
-        <button
-          className="cs-locate-btn"
-          title="Recenter"
-          onClick={() => mapInstance?.flyTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <path d="M12 2v3M12 19v3M22 12h-3M5 12H2" />
-            <path d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
-          </svg>
-        </button>
-      </div>
+      )}
       </MapContext.Provider>
     </div>
   );
