@@ -504,18 +504,18 @@ export function Dashboard() {
                     <div className="cs-row-info">
                       <div className="cs-row-title-line">
                         <span className="cs-row-name">{device.name ?? device.uuid}</span>
-                        <span className="cs-row-status-battery">
-                          <span className="cs-row-status-label" style={{ color: meta.color }}>
-                            {meta.label}
-                          </span>
-                          <span className={`cs-row-battery ${batteryClass(device.status?.battery)}`}>
-                            <BatteryIcon battery={device.status?.battery} />
-                            {device.status?.battery != null ? `${formatBattery(device.status.battery)}%` : '—'}
-                          </span>
-                        </span>
                       </div>
                       <div className="cs-row-meta-line">
                         <span className="cs-row-desc">{device.description || 'Device'}</span>
+                      </div>
+                      <div className="cs-row-status-battery">
+                        <span className="cs-row-status-label" style={{ color: meta.color }}>
+                          {meta.label}
+                        </span>
+                        <span className={`cs-row-battery ${batteryClass(device.status?.battery)}`}>
+                          <BatteryIcon battery={device.status?.battery} />
+                          {device.status?.battery != null ? `${formatBattery(device.status.battery)}%` : '—'}
+                        </span>
                       </div>
                     </div>
                     <svg

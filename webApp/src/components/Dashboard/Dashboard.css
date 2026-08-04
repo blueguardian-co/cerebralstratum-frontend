@@ -364,6 +364,10 @@
 .cs-panel {
   margin-top: 16px;
   width: 100%;
+  /* Caps the drawer to a sane reading width on large screens instead of
+     stretching edge-to-edge — width:100% still governs on anything
+     narrower than this, so mobile/tablet is unaffected. */
+  max-width: 420px;
   align-self: stretch;
   flex: 0 0 auto;
   max-height: min(65vh, 520px);
@@ -553,7 +557,6 @@
 .cs-row-title-line {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
 }
 
@@ -579,7 +582,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  flex: 0 0 auto;
+  margin-top: 4px;
 }
 
 .cs-row-meta-line {
