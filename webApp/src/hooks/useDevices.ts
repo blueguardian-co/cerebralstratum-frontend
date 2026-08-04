@@ -128,43 +128,48 @@ export function useDevices(): UseDevicesResult {
     };
   }, [isAuthenticated, deviceIds]);
 
+  // A single multiplexed SSE stream covering every device, instead of one
+  // connection per device — with N devices that used to mean N persistent
+  // connections competing (along with the location stream's own N
+  // connections in Map.tsx) for the browser's per-origin connection cap,
+  // starving out whichever stream lost the race for a slot.
   useEffect(() => {
     if (!isAuthenticated || !deviceIds) return;
 
-    const sources = deviceIds.split(',').map((uuid) => {
-      const source = new EventSource(`${config.backendApi}/api/v1/devices/by-id/${uuid}/status`, {
-        fetch: (url, init) =>
-          fetch(url, {
-            ...init,
-            headers: { ...init.headers, Authorization: `Bearer ${tokenRef.current}` },
-          }),
-      });
-
-      source.onmessage = (event) => {
-        let status: DeviceStatus;
-        try {
-          status = JSON.parse(event.data) as DeviceStatus;
-        } catch {
-          console.warn('useDevices: unparseable status SSE payload', event.data);
-          return;
-        }
-        // Device is a Kotlin/JS data class exported as a real class (getters,
-        // no plain own-enumerable properties), so object-spread can't produce
-        // a well-typed copy — go through the constructor instead.
-        setDevices((prev) =>
-          prev.map((d) =>
-            d.uuid === uuid
-              ? new Device(d.uuid, d.name, d.description, d.keycloak_user_id, d.keycloak_org_id, d.image_path, status)
-              : d
-          )
-        );
-      };
-
-      return source;
+    const params = deviceIds
+      .split(',')
+      .map((id) => `devices=${encodeURIComponent(id)}`)
+      .join('&');
+    const source = new EventSource(`${config.backendApi}/api/v1/devices/statuses?${params}`, {
+      fetch: (url, init) =>
+        fetch(url, {
+          ...init,
+          headers: { ...init.headers, Authorization: `Bearer ${tokenRef.current}` },
+        }),
     });
 
+    source.onmessage = (event) => {
+      let payload: { deviceId: string; status: DeviceStatus };
+      try {
+        payload = JSON.parse(event.data) as { deviceId: string; status: DeviceStatus };
+      } catch {
+        console.warn('useDevices: unparseable status SSE payload', event.data);
+        return;
+      }
+      // Device is a Kotlin/JS data class exported as a real class (getters,
+      // no plain own-enumerable properties), so object-spread can't produce
+      // a well-typed copy — go through the constructor instead.
+      setDevices((prev) =>
+        prev.map((d) =>
+          d.uuid === payload.deviceId
+            ? new Device(d.uuid, d.name, d.description, d.keycloak_user_id, d.keycloak_org_id, d.image_path, payload.status)
+            : d
+        )
+      );
+    };
+
     return () => {
-      sources.forEach((source) => source.close());
+      source.close();
     };
     // token intentionally excluded — read via tokenRef so a silent refresh
     // doesn't tear down every open EventSource connection (see tokenRef above).

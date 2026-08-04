@@ -145,19 +145,40 @@ function matchesQuery(device: Device, query: string): boolean {
   return haystack.includes(query);
 }
 
+const FILTER_VALUES: readonly Filter[] = ['all', 'active', 'alert', 'offline'];
+
+function isFilter(value: string | null): value is Filter {
+  return value != null && (FILTER_VALUES as readonly string[]).includes(value);
+}
+
+// CSPROD-139: status/search filters are seeded from the URL on load (and
+// kept in sync afterwards, see the effect below) so a filtered view can be
+// bookmarked or shared as a link rather than only living in React state.
+function getInitialFilter(): Filter {
+  const value = new URLSearchParams(window.location.search).get('status');
+  return isFilter(value) ? value : 'all';
+}
+
+function getInitialQuery(): string {
+  return new URLSearchParams(window.location.search).get('q') ?? '';
+}
+
 type ThemeVars = CSSProperties & Record<`--${string}`, string>;
 
 export function Dashboard() {
   const { devices, isLoading, error } = useDevices();
-  const { isAuthenticated, user, login, logout } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user, login, logout } = useAuth();
   const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialThemeMode);
   const systemPrefersDark = useMediaQuery('(prefers-color-scheme: dark)');
   const theme: ThemeName = themeMode === 'system' ? (systemPrefersDark ? 'dark' : 'light') : themeMode;
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [focusedDeviceId, setFocusedDeviceId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>('all');
-  const [query, setQuery] = useState('');
-  const [devicesMenuOpen, setDevicesMenuOpen] = useState(false);
+  const [filter, setFilter] = useState<Filter>(getInitialFilter);
+  const [query, setQuery] = useState(getInitialQuery);
+  // Open the drawer up front when the URL already carries a filter, so a
+  // bookmarked/shared link shows why the results (and the map) are
+  // restricted instead of leaving that state hidden behind a closed panel.
+  const [devicesMenuOpen, setDevicesMenuOpen] = useState(() => getInitialFilter() !== 'all' || getInitialQuery() !== '');
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   // No notification API is wired up yet — this stays empty until there's a
@@ -171,6 +192,18 @@ export function Dashboard() {
   useEffect(() => {
     localStorage.setItem(THEME_STORAGE_KEY, themeMode);
   }, [themeMode]);
+
+  // Keep the URL in sync with the filter/search state (CSPROD-139) — a
+  // `replaceState` rather than `pushState` so typing in the search box
+  // doesn't flood browser history with one entry per keystroke.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (filter === 'all') url.searchParams.delete('status');
+    else url.searchParams.set('status', filter);
+    if (query) url.searchParams.set('q', query);
+    else url.searchParams.delete('q');
+    window.history.replaceState(null, '', url);
+  }, [filter, query]);
 
   useEffect(() => {
     if (!accountMenuOpen && !notificationsOpen) return;
@@ -275,7 +308,11 @@ export function Dashboard() {
         <div className="cs-ribbon-spacer" />
 
         <div className="cs-ribbon-actions">
-          {!isAuthenticated ? (
+          {/* Nothing rendered while auth is still resolving (e.g. a fresh
+              full page load on a bookmarked URL) — otherwise "Sign in"
+              flashes before flipping to the account button a moment later
+              once Keycloak's check-sso comes back authenticated. */}
+          {authLoading ? null : !isAuthenticated ? (
             <button className="cs-signin-btn" onClick={login}>
               Sign in
             </button>

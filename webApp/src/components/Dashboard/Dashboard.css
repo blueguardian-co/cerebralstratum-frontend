@@ -203,16 +203,11 @@
   flex: 0 0 auto;
 }
 
-/* A pill that widens to show the user's full name when there's room, and
-   collapses back to just the circular badge (see the 960px rule below) when
-   there isn't — border-radius stays maxed out the whole time, so the same
-   shape reads as a rounded rectangle when wide and a circle once its width
-   equals its height again. */
 .cs-avatar {
   position: relative;
   height: 34px;
   padding: 3px 14px 3px 3px;
-  border-radius: 999px;
+  border-radius: 10px;
   border: 1px solid var(--cs-hairline);
   background: var(--cs-sel);
   display: flex;

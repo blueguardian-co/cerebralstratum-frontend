@@ -18,3 +18,22 @@
 .cs-map-container .mapboxgl-ctrl-bottom-right .mapboxgl-ctrl {
   margin: 0;
 }
+
+/* Mapbox's default compass control is a 32px, square-cornered, opaque-white
+   button — a different size and style than the custom zoom/recenter cluster
+   it's docked above (Dashboard.css .cs-zoom-btn/.cs-locate-btn: 42px square,
+   12px radius, frosted panel background), so despite sharing the same right
+   edge they didn't read as one aligned group. Match it exactly instead. */
+.cs-map-container .mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-group {
+  border-radius: 12px;
+  background: var(--cs-panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--cs-hairline);
+  box-shadow: var(--cs-shadow);
+}
+
+.cs-map-container .mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-group button {
+  width: 42px;
+  height: 42px;
+}

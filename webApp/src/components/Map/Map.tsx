@@ -16,8 +16,8 @@ const GLOBE_ZOOM = 2;
 const GLOBE_SECONDS_PER_REVOLUTION = 720;
 
 interface LocationEventPayload {
-  device_id: string;
-  coordinates: unknown;
+  deviceId: string;
+  location: { coordinates: unknown };
 }
 
 // Backend's PointSerializer writes [point.getY(), point.getX(), altitude?] —
@@ -97,7 +97,7 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
   const markersRef = useRef<Record<string, mapboxgl.Marker>>({});
   const markerAnimationsRef = useRef<Record<string, () => void>>({});
   const selectedDeviceIdRef = useRef<string | null>(null);
-  const { isAuthenticated, token } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, token } = useAuth();
 
   useEffect(() => {
     selectedDeviceIdRef.current = selectedDeviceId;
@@ -122,7 +122,12 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
       style: 'mapbox://styles/mapbox/streets-v11',
       center: DEFAULT_CENTER,
       zoom: DEFAULT_ZOOM,
+      // Default AttributionControl anchors bottom-right, the same corner as
+      // the custom zoom/recenter cluster (see Map.css) — moved to the empty
+      // bottom-left corner instead, full text kept as-is.
+      attributionControl: false,
     });
+    mapInstance.addControl(new mapboxgl.AttributionControl(), 'bottom-left');
     setMap(mapInstance);
     onMapChange(mapInstance);
 
@@ -142,8 +147,16 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
   // Switch between the spinning globe (unauthenticated) and the normal
   // authenticated view. Correctly depends on both `map` and
   // `isAuthenticated` — no stale-closure workaround needed.
+  //
+  // Waits on `authLoading` too: on a fresh full page load (e.g. a bookmarked
+  // filtered URL), `isAuthenticated` starts out false while Keycloak's
+  // check-sso is still resolving, indistinguishable at that point from an
+  // actually-signed-out user. Deciding the projection off `isAuthenticated`
+  // alone spun up the globe every time, only to immediately snap back to
+  // the normal map a moment later once auth resolved true — skip straight
+  // to the real state instead of showing that transient wrong one.
   useEffect(() => {
-    if (!map) return;
+    if (!map || authLoading) return;
 
     if (!isAuthenticated) {
       map.setProjection('globe');
@@ -173,52 +186,63 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
       map.addControl(new mapboxgl.NavigationControl({ showZoom: false, showCompass: true }), 'bottom-right');
       navControlAddedRef.current = true;
     }
-  }, [map, isAuthenticated]);
+  }, [map, isAuthenticated, authLoading]);
 
-  // Live per-device location markers.
+  // Keyed on the device UUIDs joined into a string rather than the `devices`
+  // array itself — same reasoning as the status hook in useDevices.ts: a
+  // status-only update produces a new `devices` array reference without
+  // adding/removing a device, and depending on `devices` directly would tear
+  // down and reopen the location stream on every unrelated status push.
+  const deviceIds = devices.map((d) => d.uuid).join(',');
+
+  // Live location markers, fed by a single multiplexed SSE stream covering
+  // every device instead of one connection per device — with N devices that
+  // used to mean N persistent connections competing (along with the status
+  // stream's own N connections) for the browser's per-origin connection cap,
+  // starving out whichever stream lost the race.
   useEffect(() => {
-    if (!map || !isAuthenticated || !tokenRef.current) return;
+    if (!map || !isAuthenticated || !tokenRef.current || !deviceIds) return;
 
-    const sources = devices.map((device) => {
-      const source = new EventSource(`${config.backendApi}/api/v1/devices/by-id/${device.uuid}/location`, {
-        fetch: (url, init) =>
-          fetch(url, {
-            ...init,
-            headers: { ...init.headers, Authorization: `Bearer ${tokenRef.current}` },
-          }),
-      });
-
-      source.onmessage = (event) => {
-        const payload = JSON.parse(event.data) as LocationEventPayload;
-        const lngLat = extractLngLat(payload.coordinates);
-        if (!lngLat) return;
-
-        const existing = markersRef.current[device.uuid];
-        if (existing) {
-          markerAnimationsRef.current[device.uuid]?.();
-          markerAnimationsRef.current[device.uuid] = animateMarkerTo(existing, lngLat, MARKER_ANIMATION_MS);
-        } else {
-          markersRef.current[device.uuid] = new mapboxgl.Marker().setLngLat(lngLat).addTo(map);
-        }
-
-        // Only recentre a selected device's camera once its marker nears the
-        // edge of the current viewport — otherwise the view stays put while
-        // the marker glides around inside it. Zoom is left alone here; the
-        // selection-change effect below owns the initial focus-in.
-        if (device.uuid === selectedDeviceIdRef.current) {
-          if (!existing) {
-            map.flyTo({ center: lngLat, zoom: Math.max(map.getZoom(), FOCUS_ZOOM) });
-          } else if (isNearViewportEdge(map, lngLat)) {
-            map.easeTo({ center: lngLat, duration: MARKER_ANIMATION_MS });
-          }
-        }
-      };
-
-      return source;
+    const params = deviceIds
+      .split(',')
+      .map((id) => `devices=${encodeURIComponent(id)}`)
+      .join('&');
+    const source = new EventSource(`${config.backendApi}/api/v1/devices/locations?${params}`, {
+      fetch: (url, init) =>
+        fetch(url, {
+          ...init,
+          headers: { ...init.headers, Authorization: `Bearer ${tokenRef.current}` },
+        }),
     });
 
+    source.onmessage = (event) => {
+      const payload = JSON.parse(event.data) as LocationEventPayload;
+      const lngLat = extractLngLat(payload.location?.coordinates);
+      if (!lngLat) return;
+
+      const existing = markersRef.current[payload.deviceId];
+      if (existing) {
+        markerAnimationsRef.current[payload.deviceId]?.();
+        markerAnimationsRef.current[payload.deviceId] = animateMarkerTo(existing, lngLat, MARKER_ANIMATION_MS);
+      } else {
+        markersRef.current[payload.deviceId] = new mapboxgl.Marker().setLngLat(lngLat).addTo(map);
+      }
+
+      // Only recentre a selected device's camera once its marker nears the
+      // edge of the current viewport — otherwise the view stays put while
+      // the marker glides around inside it. Zoom is left alone here; the
+      // selection-change effect below owns the initial focus-in.
+      if (payload.deviceId === selectedDeviceIdRef.current) {
+        if (!existing) {
+          map.flyTo({ center: lngLat, zoom: Math.max(map.getZoom(), FOCUS_ZOOM) });
+        } else if (isNearViewportEdge(map, lngLat)) {
+          map.easeTo({ center: lngLat, duration: MARKER_ANIMATION_MS });
+        }
+      }
+    };
+
     return () => {
-      sources.forEach((source) => source.close());
+      source.close();
       Object.values(markerAnimationsRef.current).forEach((cancel) => cancel());
       markerAnimationsRef.current = {};
       Object.values(markersRef.current).forEach((marker) => marker.remove());
@@ -227,7 +251,7 @@ export default function Map({ devices, selectedDeviceId, onMapChange }: MapProps
     // token intentionally excluded — read via tokenRef so a silent refresh
     // doesn't tear down every open EventSource connection (see tokenRef above).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, devices, isAuthenticated]);
+  }, [map, deviceIds, isAuthenticated]);
 
   // Focus the map on a device as soon as it's selected, if its location is
   // already known.
