@@ -125,8 +125,8 @@ function getInitialThemeMode(): ThemeMode {
 }
 
 // Unlike a one-time `matchMedia(...).matches` read at load, this tracks the
-// query's match state live via its `change` event — used for both OS theme
-// ("System" mode following the OS) and the mobile-layout breakpoint below.
+// query's match state live via its `change` event — used for OS theme
+// ("System" mode following the OS).
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() => window.matchMedia?.(query).matches ?? false);
 
@@ -139,11 +139,6 @@ function useMediaQuery(query: string): boolean {
 
   return matches;
 }
-
-// Mirrors the `@media (max-width: 720px)` breakpoint in Dashboard.css — keep
-// the two values in sync. Below this width the device list moves from a
-// permanent sidebar into a masthead-anchored dropdown drawer.
-const MOBILE_QUERY = '(max-width: 720px)';
 
 function matchesQuery(device: Device, query: string): boolean {
   const haystack = `${device.name ?? ''} ${device.description ?? ''} ${device.uuid}`.toLowerCase();
@@ -158,12 +153,10 @@ export function Dashboard() {
   const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialThemeMode);
   const systemPrefersDark = useMediaQuery('(prefers-color-scheme: dark)');
   const theme: ThemeName = themeMode === 'system' ? (systemPrefersDark ? 'dark' : 'light') : themeMode;
-  const isMobile = useMediaQuery(MOBILE_QUERY);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [focusedDeviceId, setFocusedDeviceId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
-  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [devicesMenuOpen, setDevicesMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -173,6 +166,7 @@ export function Dashboard() {
   const hasUnreadNotifications = notifications.some((n) => !n.read);
   const [mapInstance, setMapInstance] = useState<MapboxMap | null>(null);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     localStorage.setItem(THEME_STORAGE_KEY, themeMode);
@@ -190,11 +184,12 @@ export function Dashboard() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [accountMenuOpen, notificationsOpen]);
 
-  // The desktop sidebar is always visible, so a drawer left open from a
-  // previous mobile width shouldn't reappear if the viewport widens back out.
+  // Search only means something once the filtered list is visible, so put
+  // the cursor there the moment the drawer opens instead of making users
+  // click into it themselves.
   useEffect(() => {
-    if (!isMobile) setDevicesMenuOpen(false);
-  }, [isMobile]);
+    if (devicesMenuOpen) searchInputRef.current?.focus();
+  }, [devicesMenuOpen]);
 
   const C = THEME_COLORS[theme];
 
@@ -218,11 +213,6 @@ export function Dashboard() {
     setExpandedIds(allExpanded ? new Set() : new Set(filteredDevices.map((d) => d.uuid)));
   };
 
-  // On mobile the panel only exists while the drawer is open (devicesMenuOpen
-  // already gates whether it renders at all), so its list is always visible;
-  // on desktop the list follows the sidebar's own minimise toggle.
-  const devicesListVisible = isMobile || !panelCollapsed;
-
   const rootStyle: ThemeVars = {
     '--cs-brand': C.brand,
     '--cs-brand-dark': C.brandDark,
@@ -241,6 +231,9 @@ export function Dashboard() {
 
   const initials =
     `${user?.givenName?.[0] ?? ''}${user?.familyName?.[0] ?? ''}`.toUpperCase() || null;
+
+  const fullName =
+    `${user?.givenName ?? ''} ${user?.familyName ?? ''}`.trim() || user?.preferredUsername || user?.email || null;
 
   return (
     <div className="cs-dashboard" style={rootStyle}>
@@ -262,58 +255,26 @@ export function Dashboard() {
         </div>
 
         {isAuthenticated && (
-          <div className="cs-search">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <circle cx="11" cy="11" r="7" />
-              <path d="m21 21-4.3-4.3" strokeLinecap="round" />
+          <button
+            className={`cs-devices-toggle${devicesMenuOpen ? ' cs-devices-toggle-active' : ''}`}
+            title="Devices"
+            onClick={() => {
+              setDevicesMenuOpen((o) => !o);
+              setAccountMenuOpen(false);
+              setNotificationsOpen(false);
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+              <path d={DEVICE_ICON_PATH} />
             </svg>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search assets, IDs, descriptions…"
-              className="cs-search-input"
-            />
-          </div>
-        )}
-
-        {isAuthenticated && (
-          <div className="cs-chips">
-            {(['all', 'active', 'alert', 'offline'] as const).map((key) => (
-              <button
-                key={key}
-                onClick={() => setFilter(key)}
-                className={`cs-chip${filter === key ? ' cs-chip-active' : ''}`}
-              >
-                <span
-                  className="cs-chip-dot"
-                  style={{ background: key === 'all' ? 'var(--cs-sub)' : STATUS_META[key].color }}
-                />
-                {key === 'all' ? 'All' : STATUS_META[key].label}
-                <span className="cs-chip-count">{counts[key]}</span>
-              </button>
-            ))}
-          </div>
+            <span className="cs-devices-toggle-label">Devices</span>
+            {devices.length > 0 && <span className="cs-devices-toggle-count">{devices.length}</span>}
+          </button>
         )}
 
         <div className="cs-ribbon-spacer" />
 
         <div className="cs-ribbon-actions">
-          {isAuthenticated && isMobile && (
-            <button
-              className={`cs-devices-toggle${devicesMenuOpen ? ' cs-devices-toggle-active' : ''}`}
-              title="Devices"
-              onClick={() => {
-                setDevicesMenuOpen((o) => !o);
-                setAccountMenuOpen(false);
-                setNotificationsOpen(false);
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
-                <path d={DEVICE_ICON_PATH} />
-              </svg>
-              {devices.length > 0 && <span className="cs-devices-toggle-count">{devices.length}</span>}
-            </button>
-          )}
           {!isAuthenticated ? (
             <button className="cs-signin-btn" onClick={login}>
               Sign in
@@ -329,13 +290,16 @@ export function Dashboard() {
                   setDevicesMenuOpen(false);
                 }}
               >
-                {initials ?? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                )}
-                {hasUnreadNotifications && <span className="cs-avatar-dot" />}
+                <span className="cs-avatar-badge">
+                  {initials ?? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  )}
+                  {hasUnreadNotifications && <span className="cs-avatar-dot" />}
+                </span>
+                {fullName && <span className="cs-avatar-name">{fullName}</span>}
               </button>
               {accountMenuOpen && (
                 <div className="cs-account-menu">
@@ -398,13 +362,12 @@ export function Dashboard() {
       </header>
 
       {/* ============ DEVICE LIST PANEL ============ */}
-      {/* Desktop: permanent sidebar, collapsible via panelCollapsed. Mobile:
-          only rendered while devicesMenuOpen, as a dropdown drawer hanging
-          off the masthead — reusing devicesListVisible instead of a second
-          collapsed state, since "closed" and "collapsed" are the same thing
-          on mobile. */}
-      {isAuthenticated && (!isMobile || devicesMenuOpen) && (
-      <aside className={`cs-panel${isMobile ? ' cs-panel-drawer' : panelCollapsed ? ' cs-panel-collapsed' : ''}`}>
+      {/* A dropdown drawer hanging off the masthead, on every breakpoint —
+          only rendered while devicesMenuOpen. The search bar and status
+          filter chips live here rather than in the masthead because they're
+          only useful alongside the filtered results they're driving. */}
+      {isAuthenticated && devicesMenuOpen && (
+      <aside className="cs-panel">
         <div className="cs-panel-header">
           <div>
             <div className="cs-panel-title">Devices</div>
@@ -413,136 +376,147 @@ export function Dashboard() {
             </div>
           </div>
           <div className="cs-panel-header-actions">
-            {devicesListVisible && filteredDevices.length > 0 && (
+            {filteredDevices.length > 0 && (
               <button className="cs-panel-expand-all" onClick={toggleExpandAll}>
                 {allExpanded ? 'Collapse all' : 'Expand all'}
               </button>
             )}
-            <button
-              onClick={() => (isMobile ? setDevicesMenuOpen(false) : setPanelCollapsed((c) => !c))}
-              title={isMobile ? 'Close devices' : panelCollapsed ? 'Expand devices' : 'Minimise'}
-              className="cs-panel-toggle"
-            >
-              {isMobile ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
-                  <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2.2}
-                  style={{ transform: `rotate(${panelCollapsed ? 180 : 0}deg)`, transition: 'transform .2s ease' }}
-                >
-                  <path d="m6 15 6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
+            <button onClick={() => setDevicesMenuOpen(false)} title="Close devices" className="cs-panel-toggle">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
+              </svg>
             </button>
           </div>
         </div>
 
-        {devicesListVisible && (
-          <div className="cs-panel-list">
-            {isLoading && <p className="cs-panel-status">Loading devices…</p>}
-            {!isLoading && error && (
-              <p className="cs-panel-status cs-panel-error" role="alert">
-                {error}
-              </p>
-            )}
-            {!isLoading && !error && filteredDevices.length === 0 && (
-              <p className="cs-panel-status">No devices found.</p>
-            )}
-            {!isLoading &&
-              !error &&
-              filteredDevices.map((device) => {
-                const bucket = statusBucket(device.status?.overall);
-                const meta = STATUS_META[bucket];
-                const selected = expandedIds.has(device.uuid);
-                return (
-                  <div key={device.uuid} className="cs-row">
-                    <button
-                      onClick={() => {
-                        setExpandedIds((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(device.uuid)) next.delete(device.uuid);
-                          else next.add(device.uuid);
-                          return next;
-                        });
-                        setFocusedDeviceId(device.uuid);
-                      }}
-                      onFocus={() => setFocusedDeviceId(device.uuid)}
-                      className="cs-row-main"
-                      style={{ background: selected ? 'var(--cs-sel)' : 'transparent', borderColor: selected ? meta.color : 'transparent' }}
-                    >
-                      <div className="cs-row-icon-wrap">
-                        {device.image_path ? (
-                          <img src={device.image_path} alt="" className="cs-row-icon-img" />
-                        ) : (
-                          <div className="cs-row-icon" style={{ background: `${meta.color}26` }}>
-                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={meta.color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
-                              <path d={DEVICE_ICON_PATH} />
-                            </svg>
-                          </div>
-                        )}
-                        <span className="cs-row-dot" style={{ background: meta.color }} />
-                      </div>
-                      <div className="cs-row-info">
-                        <div className="cs-row-title-line">
-                          <span className="cs-row-name">{device.name ?? device.uuid}</span>
-                          <span className="cs-row-status-battery">
-                            <span className="cs-row-status-label" style={{ color: meta.color }}>
-                              {meta.label}
-                            </span>
-                            <span className={`cs-row-battery ${batteryClass(device.status?.battery)}`}>
-                              <BatteryIcon battery={device.status?.battery} />
-                              {device.status?.battery != null ? `${formatBattery(device.status.battery)}%` : '—'}
-                            </span>
-                          </span>
-                        </div>
-                        <div className="cs-row-meta-line">
-                          <span className="cs-row-desc">{device.description || 'Device'}</span>
-                        </div>
-                      </div>
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="var(--cs-sub)"
-                        strokeWidth={2.2}
-                        className="cs-row-chevron"
-                        style={{ transform: `rotate(${selected ? 180 : 0}deg)` }}
-                      >
-                        <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
+        <div className="cs-panel-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" strokeLinecap="round" />
+          </svg>
+          <input
+            ref={searchInputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search assets, IDs, descriptions…"
+            className="cs-panel-search-input"
+          />
+        </div>
 
-                    {selected && (
-                      <div className="cs-row-detail">
-                        {bucket === 'alert' && (
-                          <div className="cs-row-alert">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cs-accent)" strokeWidth={2} style={{ flex: '0 0 auto', marginTop: 1 }}>
-                              <path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            <span>{device.status?.summary}</span>
-                          </div>
-                        )}
-                        {bucket !== 'alert' && device.status?.summary && (
-                          <p className="cs-row-summary">{device.status.summary}</p>
-                        )}
-                        {bucket !== 'alert' && !device.status && (
-                          <p className="cs-row-summary">No status reported yet.</p>
-                        )}
+        <div className="cs-panel-chips">
+          {(['all', 'active', 'alert', 'offline'] as const).map((key) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`cs-chip${filter === key ? ' cs-chip-active' : ''}`}
+            >
+              <span
+                className="cs-chip-dot"
+                style={{ background: key === 'all' ? 'var(--cs-sub)' : STATUS_META[key].color }}
+              />
+              {key === 'all' ? 'All' : STATUS_META[key].label}
+              <span className="cs-chip-count">{counts[key]}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="cs-panel-list">
+          {isLoading && <p className="cs-panel-status">Loading devices…</p>}
+          {!isLoading && error && (
+            <p className="cs-panel-status cs-panel-error" role="alert">
+              {error}
+            </p>
+          )}
+          {!isLoading && !error && filteredDevices.length === 0 && (
+            <p className="cs-panel-status">No devices found.</p>
+          )}
+          {!isLoading &&
+            !error &&
+            filteredDevices.map((device) => {
+              const bucket = statusBucket(device.status?.overall);
+              const meta = STATUS_META[bucket];
+              const selected = expandedIds.has(device.uuid);
+              return (
+                <div key={device.uuid} className="cs-row">
+                  <button
+                    onClick={() => {
+                      setExpandedIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(device.uuid)) next.delete(device.uuid);
+                        else next.add(device.uuid);
+                        return next;
+                      });
+                      setFocusedDeviceId(device.uuid);
+                    }}
+                    onFocus={() => setFocusedDeviceId(device.uuid)}
+                    className="cs-row-main"
+                    style={{ background: selected ? 'var(--cs-sel)' : 'transparent', borderColor: selected ? meta.color : 'transparent' }}
+                  >
+                    <div className="cs-row-icon-wrap">
+                      {device.image_path ? (
+                        <img src={device.image_path} alt="" className="cs-row-icon-img" />
+                      ) : (
+                        <div className="cs-row-icon" style={{ background: `${meta.color}26` }}>
+                          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={meta.color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+                            <path d={DEVICE_ICON_PATH} />
+                          </svg>
+                        </div>
+                      )}
+                      <span className="cs-row-dot" style={{ background: meta.color }} />
+                    </div>
+                    <div className="cs-row-info">
+                      <div className="cs-row-title-line">
+                        <span className="cs-row-name">{device.name ?? device.uuid}</span>
+                        <span className="cs-row-status-battery">
+                          <span className="cs-row-status-label" style={{ color: meta.color }}>
+                            {meta.label}
+                          </span>
+                          <span className={`cs-row-battery ${batteryClass(device.status?.battery)}`}>
+                            <BatteryIcon battery={device.status?.battery} />
+                            {device.status?.battery != null ? `${formatBattery(device.status.battery)}%` : '—'}
+                          </span>
+                        </span>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-          </div>
-        )}
+                      <div className="cs-row-meta-line">
+                        <span className="cs-row-desc">{device.description || 'Device'}</span>
+                      </div>
+                    </div>
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="var(--cs-sub)"
+                      strokeWidth={2.2}
+                      className="cs-row-chevron"
+                      style={{ transform: `rotate(${selected ? 180 : 0}deg)` }}
+                    >
+                      <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+
+                  {selected && (
+                    <div className="cs-row-detail">
+                      {bucket === 'alert' && (
+                        <div className="cs-row-alert">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cs-accent)" strokeWidth={2} style={{ flex: '0 0 auto', marginTop: 1 }}>
+                            <path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>{device.status?.summary}</span>
+                        </div>
+                      )}
+                      {bucket !== 'alert' && device.status?.summary && (
+                        <p className="cs-row-summary">{device.status.summary}</p>
+                      )}
+                      {bucket !== 'alert' && !device.status && (
+                        <p className="cs-row-summary">No status reported yet.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+        </div>
       </aside>
       )}
       </div>
