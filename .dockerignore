@@ -1,0 +1,34 @@
+# VCS / IDE
+.git
+.idea
+.DS_Store
+
+# Docs, GitOps/CI config not needed inside the build context
+Writerside
+.argocd
+.tekton
+.github
+.junie
+
+# Gradle / Kotlin build state (regenerated inside the build)
+.gradle
+.kotlin
+build/
+shared/build/
+composeApp/build/
+!composeApp/build.gradle.kts
+
+# Platform targets not part of the web image
+iosApp
+composeApp
+!composeApp/build.gradle.kts
+
+# Node
+node_modules
+webApp/node_modules
+webApp/dist
+
+# Local/dev-only files that must never end up in the image
+local.properties
+webApp/public/env.js
+*.env*

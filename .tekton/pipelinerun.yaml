@@ -48,11 +48,28 @@ spec:
             value: $(params.repo_url)
           - name: revision
             value: $(params.revision)
+      - name: build-metadata
+        # Supplies the build timestamp for the OCI image labels baked into
+        # the Dockerfile's runtime stage (org.opencontainers.image.created).
+        # repo_url/revision are already pipeline params, so only the
+        # timestamp needs computing here.
+        taskSpec:
+          results:
+            - name: build-date
+              description: UTC build timestamp (RFC3339) for OCI image labels
+          steps:
+            - name: date
+              image: registry.access.redhat.com/ubi9/ubi-minimal:9.8
+              script: |
+                #!/usr/bin/env sh
+                set -eu
+                date -u +%Y-%m-%dT%H:%M:%SZ | tr -d '\n' > "$(results.build-date.path)"
       - name: build-image
         taskRef:
           name: buildah
         runAfter:
           - fetch-repository
+          - build-metadata
         workspaces:
           - name: source
             workspace: source
@@ -62,7 +79,12 @@ spec:
           - name: IMAGE
             value: $(params.image)
           - name: BUILD_EXTRA_ARGS
-            value: "--storage-driver=overlay"
+            value: >-
+              --storage-driver=overlay
+              --build-arg VCS_URL=$(params.repo_url)
+              --build-arg VCS_REF=$(params.revision)
+              --build-arg IMAGE_VERSION=$(params.revision)
+              --build-arg BUILD_DATE=$(tasks.build-metadata.results.build-date)
       - name: git-clone-argocd-repo
         taskRef:
           name: git-clone
