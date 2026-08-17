@@ -8,6 +8,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    target-branch: "qa"
     groups:
       react:
         patterns:
@@ -30,6 +31,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    target-branch: "qa"
     groups:
       kotlin:
         patterns:
@@ -57,3 +59,4 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    target-branch: "qa"
