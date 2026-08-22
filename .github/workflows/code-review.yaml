@@ -1,0 +1,52 @@
+# .github/workflows/code-review.yml
+name: Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: JetBrains/junie-github-action@v1
+        with:
+          junie_api_key: ${{ secrets.JUNIE_API_KEY }}
+          # Update the same comment on subsequent Junie runs instead of adding new comments
+          use_single_comment: true
+          # Alternatively, write your custom review instructions in the prompt field
+          # instead of using the built-in "code-review" value
+          prompt: |
+            Review this pull request for the CEREBRAL STRATUM frontend (Kotlin Multiplatform — shared/composeApp/webApp/iosApp).
+
+            Flag, in priority order:
+            1. Build-time env vars — any `import.meta.env` / Vite build-time env var usage in `webApp/`.
+               Per ADR-0006, all config must be injected at runtime via `webApp/public/env.js` /
+               `window.__env__`; build-time env vars silently produce wrong config per-deployment rather
+               than failing loudly.
+            2. `expect`/`actual` mismatches — a new `expect` declaration in `shared/` without a matching
+               `actual` for every target (androidMain, iosMain, jvmMain, jsMain), or platform-specific logic
+               that should be an `expect`/`actual` pair but was instead hacked in with runtime checks.
+            3. `@JsExport` correctness — new public shared-module APIs intended for `webApp/` consumption
+               that are missing `@JsExport`/`@OptIn(ExperimentalJsExport::class)`, or that export types
+               unusable from TypeScript (e.g. non-exportable Kotlin collection types across the JS boundary).
+            4. Desktop/native distribution — any CI or packaging change that starts publishing the desktop
+               (JVM) or other native build artifacts. Per project policy the web version (container image to
+               Quay) is the only distribution channel for desktop; iOS/Android ship via App Store
+               Connect/Google Play.
+            5. Strict TypeScript violations in `webApp/` — unused locals/params, implicit `any`, anything
+               that only passes because `strict` was loosened.
+            6. Test coverage — per `.junie/guidelines.md`, diff coverage should be ≥90% (≥90% line / ≥80%
+               branch on critical modules); flag substantial new logic in `shared/` or `webApp/` with no
+               accompanying `kotlin.test`/`kover` or `vitest`/RTL tests.
+
+            Also apply general good practice: correctness bugs, secrets/tokens in code, and any image or
+            dependency pinned to a mutable tag (`latest`) in build/deploy config.
