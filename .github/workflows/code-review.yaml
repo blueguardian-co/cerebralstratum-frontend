@@ -1,4 +1,4 @@
-# .github/workflows/code-review.yml
+# .github/workflows/code-review.yaml
 name: Code Review
 
 on:
@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - uses: JetBrains/junie-github-action@v1
         with:
