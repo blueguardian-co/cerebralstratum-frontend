@@ -8,7 +8,7 @@
     "start": "vite"
   },
   "dependencies": {
-    "eventsource": "^5.1.0",
+    "eventsource": "^5.1.1",
     "keycloak-js": "^26.2.4",
     "mapbox-gl": "^3.29.0",
     "react": "^19.2.8",
