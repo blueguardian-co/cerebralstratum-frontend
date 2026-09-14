@@ -11,14 +11,14 @@
     "eventsource": "^5.1.1",
     "keycloak-js": "^26.2.4",
     "mapbox-gl": "^3.29.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "shared": "0.0.0-unspecified"
   },
   "devDependencies": {
     "@types/mapbox-gl": "^3.5.0",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
