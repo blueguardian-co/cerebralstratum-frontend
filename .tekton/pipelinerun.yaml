@@ -90,6 +90,13 @@ spec:
               --build-arg IMAGE_VERSION=$(params.revision)
               --build-arg BUILD_DATE=$(tasks.build-metadata.results.build-date)
       - name: git-clone-argocd-repo
+        # CSPROD-331: only a merge into qa (push) promotes to gitops. PR and
+        # /retest runs still build the image for validation, but must not
+        # pin it or open a digest-bump PR.
+        when:
+          - input: "{{ event_type }}"
+            operator: in
+            values: ["push"]
         taskRef:
           name: git-clone
         params:
@@ -103,6 +110,12 @@ spec:
           - name: output
             workspace: argocd_source
       - name: deploy
+        # CSPROD-331: guarded separately because a skipped when only skips
+        # its own task, not those that runAfter it.
+        when:
+          - input: "{{ event_type }}"
+            operator: in
+            values: ["push"]
         taskRef:
           kind: Task
           name: deploy
