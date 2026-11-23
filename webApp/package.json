@@ -10,7 +10,7 @@
   "dependencies": {
     "eventsource": "^5.1.5",
     "keycloak-js": "^26.2.5",
-    "mapbox-gl": "^3.34.2",
+    "mapbox-gl": "^3.35.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "shared": "0.0.0-unspecified"
